@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
+from .managers import NotExpiredManager
+
 
 User = get_user_model()
 
@@ -13,6 +15,9 @@ class UserLogin(models.Model):
     device_name = models.CharField(max_length=64, verbose_name=_('device name'))
     ip_address = models.GenericIPAddressField(verbose_name=_('ip address'))
     last_login = models.DateTimeField(verbose_name='last login')
+
+    default_manager = models.Manager()
+    objects = NotExpiredManager()
 
     class Meta:
         verbose_name = _('User Login')
