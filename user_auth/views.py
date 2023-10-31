@@ -4,9 +4,10 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .serializers import (UserLoginSerializer, UserRegisterSerializer,
-                          UserVerifySerializer, ResendVerifyMessageSerializer,)
+                          UserVerifySerializer, ResendVerifyMessageSerializer,
+                          RefreshTokenSerializer,)
 from .services import (user_login_func, user_register_func, user_verify_func,
-                       user_resend_func,)
+                       user_resend_func, refresh_token_func,)
 
 
 class UserLoginView(APIView):
@@ -97,19 +98,6 @@ class ResendVerifyMessage(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class UserLogoutView(APIView):
-    """
-    The logout function is the function that should do this:
-        1. Get Refresh token.
-        2. check validate refresh token
-        3. if refresh token is valid, it will be blacklisted. else raise Exception
-
-        return:
-            return None
-    """
-    pass
-
-
 class JwtRefreshView(APIView):
     """
     The refresh token function is the function that should do this:
@@ -120,7 +108,20 @@ class JwtRefreshView(APIView):
         return:
             Access Token
     """
-    pass
+    serializer_class = RefreshTokenSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            access_token = refresh_token_func(
+                request=request,
+                encrypted_refresh_token=serializer.validated_data['refresh_token'])
+        except:
+            return Response(
+                data={"refresh_token": _('Invalid refresh token.')},
+                status=status.HTTP_400_BAD_REQUEST)
+        return Response(data={"access_token": access_token}, status=status.HTTP_200_OK)
 
 
 class JwtVerifyView(APIView):
@@ -128,5 +129,18 @@ class JwtVerifyView(APIView):
     The jwt verify function is the function that should do this:
         1. Get Token.
         2. if token is valid. return True, else return False.
+    """
+    pass
+
+
+class UserLogoutView(APIView):
+    """
+    The logout function is the function that should do this:
+        1. Get Refresh token.
+        2. check validate refresh token
+        3. if refresh token is valid, it will be blacklisted. else raise Exception
+
+        return:
+            return None
     """
     pass

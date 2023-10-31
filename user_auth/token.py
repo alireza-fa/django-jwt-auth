@@ -43,13 +43,12 @@ def check_validate_refresh_token(refresh_token: str) -> bool:
     return True
 
 
-def check_token_device(token: Token, client_info: Dict) -> Token:
+def check_token_device(token: Token, client_info: Dict) -> None:
     """
     :return: if token is valid, return Token else raise Exception
     """
     if token['device_name'] != client_info['device_name']:
         raise ValueError('Invalid token.')
-    return token
 
 
 def validated_token(token: str, client_info: Dict) -> Token:
@@ -60,7 +59,20 @@ def validated_token(token: str, client_info: Dict) -> Token:
 
     check_token_expire(token=token)
 
-    token = check_token_device(token=token, client_info=client_info)
+    check_token_device(token=token, client_info=client_info)
+
+    return token
+
+
+def validate_refresh_token(refresh_token: str, client_info: Dict) -> Token:
+    try:
+        token = RefreshToken(token=refresh_token)
+    except TokenError:
+        raise ValueError('Invalid token')
+
+    check_token_expire(token=token)
+
+    check_token_device(token=token, client_info=client_info)
 
     return token
 
@@ -68,15 +80,11 @@ def validated_token(token: str, client_info: Dict) -> Token:
 def get_new_access_token(encrypted_refresh_token: ByteString, client_info: Dict) -> str:
     decrypted_refresh_token = decrypt(encrypted=encrypted_refresh_token)
 
-    try:
-        token = validated_token(token=decrypted_refresh_token, client_info=client_info)
-    except Exception as e:
-        raise ValueError('Invalid token')
+    token = validate_refresh_token(refresh_token=decrypted_refresh_token, client_info=client_info)
 
-    if token['token_type'] == 'refresh':
-        check_validate_refresh_token(refresh_token=str(token))
+    check_validate_refresh_token(refresh_token=str(token))
 
-    encrypted_access_token = encrypt(data=str(token.access_tokek))
+    encrypted_access_token = encrypt(data=str(token.access_token))
 
     return encrypted_access_token
 

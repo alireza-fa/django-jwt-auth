@@ -54,3 +54,7 @@ class ResendVerifyMessageSerializer(serializers.Serializer):
 
     def validate_phone_number(self, value):
         return validate_phone_number(phone_number=value)
+
+
+class RefreshTokenSerializer(serializers.Serializer):
+    refresh_token = serializers.CharField()

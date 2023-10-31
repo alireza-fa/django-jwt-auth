@@ -10,7 +10,7 @@ from django.utils import timezone
 from .models import UserLogin
 from .cache import (set_user_login_cache, set_user_register_cache, delete_user_auth_cache,
                     get_cache, incr_cache, set_cache, set_user_resend_cache,)
-from .token import get_token_by_user
+from .token import get_token_by_user, get_new_access_token
 from accounts.serializers import UserProfileSerializer
 
 
@@ -164,6 +164,7 @@ def user_verify_func(request: HttpRequest, code: str, phone_number: str) -> Dict
 # ============= End User Verify ==================================
 
 
+# ============= resend verify message ============================
 def user_resend_func(phone_number: str, request: HttpRequest) -> None:
     user_info = get_cache(key=phone_number + 'info')
 
@@ -184,10 +185,21 @@ def user_resend_func(phone_number: str, request: HttpRequest) -> None:
     set_user_resend_cache(code=code, **user_info)
 
     # TODO: send sms
+# ============ End resend verify message ========================
 
 
-def user_refresh_func():
-    pass
+# ============ refresh token ===================================
+def refresh_token_func(request: HttpRequest, encrypted_refresh_token: str) -> str:
+    client_info = get_client_info(request=request)
+
+    try:
+        encode_encrypted_refresh_token = encrypted_refresh_token.encode()
+    except ValueError:
+        raise ValueError('Invalid token')
+
+    return get_new_access_token(
+        encrypted_refresh_token=encode_encrypted_refresh_token,
+        client_info=client_info)
 
 
 def user_logout_func():

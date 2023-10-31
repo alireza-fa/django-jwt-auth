@@ -11,4 +11,5 @@ urlpatterns = [
     path('register/', views.UserRegisterView.as_view()),
     path('verify/', views.UserVerifyView.as_view()),
     path('verify/resend/', views.ResendVerifyMessage.as_view()),
+    path('token/refresh/', views.JwtRefreshView.as_view()),
 ]
