@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Local apps
     'jwt_auth.apps.JwtAuthConfig',
+    'accounts.apps.AccountsConfig',
     # Third party apps
     'drf_spectacular',
 
@@ -146,3 +147,6 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
     # OTHER SETTINGS
 }
+
+
+AUTH_USER_MODEL = 'accounts.User'
