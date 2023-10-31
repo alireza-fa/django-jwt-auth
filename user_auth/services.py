@@ -10,7 +10,7 @@ from django.utils import timezone
 from .models import UserLogin
 from .cache import (set_user_login_cache, set_user_register_cache, delete_user_auth_cache,
                     get_cache, incr_cache, set_cache, set_user_resend_cache,)
-from .token import get_token_by_user, get_new_access_token
+from .token import get_token_by_user, get_new_access_token, validated_token
 from accounts.serializers import UserProfileSerializer
 
 
@@ -200,6 +200,17 @@ def refresh_token_func(request: HttpRequest, encrypted_refresh_token: str) -> st
     return get_new_access_token(
         encrypted_refresh_token=encode_encrypted_refresh_token,
         client_info=client_info)
+# ============ End refresh token
+
+
+def check_verify_token_func(request: HttpRequest, encrypted_token: str) -> bool:
+    client_info = get_client_info(request=request)
+
+    try:
+        validated_token(encrypted_token=encrypted_token.encode(), client_info=client_info)
+    except:
+        return False
+    return True
 
 
 def user_logout_func():

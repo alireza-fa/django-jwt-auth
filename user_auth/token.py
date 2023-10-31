@@ -40,7 +40,7 @@ def check_validate_refresh_token(refresh_token: str) -> bool:
         user_login = UserLogin.objects.get(refresh_token=encrypt(data=str(refresh_token)))
     except UserLogin.DoesNotExist:
         raise ValueError('Invalid token.')
-    return True
+    return user_login
 
 
 def check_token_device(token: Token, client_info: Dict) -> None:
@@ -51,15 +51,18 @@ def check_token_device(token: Token, client_info: Dict) -> None:
         raise ValueError('Invalid token.')
 
 
-def validated_token(token: str, client_info: Dict) -> Token:
+def validated_token(encrypted_token: ByteString, client_info: Dict) -> Token:
+    decrypted_token = decrypt(encrypted=encrypted_token)
+
     try:
-        token = UntypedToken(token=token)
+        token = UntypedToken(token=decrypted_token)
     except TokenError:
         raise ValueError('Invalid token.')
 
-    check_token_expire(token=token)
-
     check_token_device(token=token, client_info=client_info)
+
+    if token['token_type'] == 'refresh':
+        check_validate_refresh_token(refresh_token=str(token))
 
     return token
 
@@ -98,10 +101,7 @@ def verify_token(token: Token, client_info: Dict) -> bool:
 def logout_user(encrypted_refresh_token: ByteString, client_info: Dict) -> None:
     decrypted_token = decrypt(encrypted=encrypted_refresh_token)
 
-    token = validated_token(token=decrypted_token, client_info=client_info)
-
-    if token['token_type'] != 'refresh':
-        raise ValueError('Invalid token')
+    token = validate_refresh_token(refresh_token=decrypted_token, client_info=client_info)
 
     try:
         user_login = UserLogin.objects.get(refresh_token=encrypt(data=str(token)))

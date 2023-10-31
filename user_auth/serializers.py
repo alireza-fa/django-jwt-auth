@@ -58,3 +58,7 @@ class ResendVerifyMessageSerializer(serializers.Serializer):
 
 class RefreshTokenSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
+
+
+class TokenSerializer(serializers.Serializer):
+    token = serializers.CharField()

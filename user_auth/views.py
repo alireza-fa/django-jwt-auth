@@ -5,9 +5,9 @@ from rest_framework import status
 
 from .serializers import (UserLoginSerializer, UserRegisterSerializer,
                           UserVerifySerializer, ResendVerifyMessageSerializer,
-                          RefreshTokenSerializer,)
+                          RefreshTokenSerializer, TokenSerializer,)
 from .services import (user_login_func, user_register_func, user_verify_func,
-                       user_resend_func, refresh_token_func,)
+                       user_resend_func, refresh_token_func, check_verify_token_func,)
 
 
 class UserLoginView(APIView):
@@ -130,7 +130,16 @@ class JwtVerifyView(APIView):
         1. Get Token.
         2. if token is valid. return True, else return False.
     """
-    pass
+    serializer_class = TokenSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        check = check_verify_token_func(
+            request=request, encrypted_token=serializer.validated_data['token'])
+        if check is False:
+            return Response(data={"token": _('Invalid token')}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_200_OK)
 
 
 class UserLogoutView(APIView):
