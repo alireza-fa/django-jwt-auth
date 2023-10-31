@@ -4,8 +4,9 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .serializers import (UserLoginSerializer, UserRegisterSerializer,
-                          UserVerifySerializer)
-from .services import (user_login_func, user_register_func, user_verify_func,)
+                          UserVerifySerializer, ResendVerifyMessageSerializer,)
+from .services import (user_login_func, user_register_func, user_verify_func,
+                       user_resend_func,)
 
 
 class UserLoginView(APIView):
@@ -84,7 +85,16 @@ class ResendVerifyMessage(APIView):
         return:
             return None
     """
-    pass
+    serializer_class = ResendVerifyMessageSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user_resend_func(request=request, phone_number=serializer.validated_data['phone_number'])
+        except PermissionError:
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response(status=status.HTTP_200_OK)
 
 
 class UserLogoutView(APIView):

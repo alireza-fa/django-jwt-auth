@@ -47,3 +47,10 @@ class UserVerifySerializer(serializers.Serializer):
 
     def validate_code(self, value):
         return persian_to_english(number=value)
+
+
+class ResendVerifyMessageSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=16)
+
+    def validate_phone_number(self, value):
+        return validate_phone_number(phone_number=value)

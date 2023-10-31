@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from .models import UserLogin
 from .cache import (set_user_login_cache, set_user_register_cache, delete_user_auth_cache,
-                    get_cache, incr_cache, set_cache)
+                    get_cache, incr_cache, set_cache, set_user_resend_cache,)
 from .token import get_token_by_user
 from accounts.serializers import UserProfileSerializer
 
@@ -164,8 +164,26 @@ def user_verify_func(request: HttpRequest, code: str, phone_number: str) -> Dict
 # ============= End User Verify ==================================
 
 
-def user_resend_func():
-    pass
+def user_resend_func(phone_number: str, request: HttpRequest) -> None:
+    user_info = get_cache(key=phone_number + 'info')
+
+    if user_info is None:
+        raise PermissionError('access denied.')
+
+    allow_sms = check_number_allow_to_receive_sms(phone_number=phone_number)
+    if allow_sms is False:
+        raise PermissionError('access denied.')
+
+    code = generate_otp_code()
+
+    client_info = get_client_info(request=request)
+
+    if client_info != user_info['client_info']:
+        raise PermissionError('access denied.')
+
+    set_user_resend_cache(code=code, **user_info)
+
+    # TODO: send sms
 
 
 def user_refresh_func():

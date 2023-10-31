@@ -64,6 +64,20 @@ def set_user_login_cache(client_info: Dict, code: str, phone_number: str) -> Non
     set_cache(key=user_try_key, value=0, timeout=120)
 
 
+def set_user_resend_cache(
+        state: str, client_info: Dict, code: str, phone_number: str,
+        fullname: str | None = None, email: str | None = None
+) -> None:
+    if state == 'register':
+        set_user_register_cache(
+            client_info=client_info, code=code, phone_number=phone_number,
+            fullname=fullname, email=email
+        )
+    else:
+        set_user_login_cache(
+            client_info=client_info, code=code, phone_number=phone_number)
+
+
 def delete_user_auth_cache(phone_number):
     key_user_info = phone_number + 'info'
     user_try_key = phone_number + 'try'
