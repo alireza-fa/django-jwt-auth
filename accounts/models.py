@@ -7,7 +7,8 @@ from .managers import UserManager
 
 class User(AbstractBaseUser, PermissionsMixin):
     phone_number = models.CharField(max_length=18, unique=True, db_index=True, verbose_name=_('phone number'))
-    fullname = models.CharField(max_length=34, null=True, blank=True, verbose_name=_('fullname'))
+    fullname = models.CharField(max_length=34, verbose_name=_('fullname'))
+    email = models.EmailField(max_length=120, null=True, blank=True, verbose_name=_('email'))
     is_active = models.BooleanField(default=True, db_index=True, verbose_name=_('is active'))
     is_ban = models.BooleanField(default=False, db_index=True, verbose_name=_('is ban'))
     is_admin = models.BooleanField(default=False, verbose_name=_('is admin'))
