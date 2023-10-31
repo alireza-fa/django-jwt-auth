@@ -17,11 +17,11 @@ def ciphertext_encrypt(cipher: EcbMode, data: str) -> ByteString:
     return cipher.encrypt(pad(data.encode('utf-8'), AES.block_size))
 
 
-def ciphertext_decode(encrypted_token: ByteString) -> bytes:
+def ciphertext_decode(encrypted_data: ByteString) -> bytes:
     try:
-        cipher_decode = base64.b64decode(encrypted_token)
+        cipher_decode = base64.b64decode(encrypted_data)
     except Exception as e:
-        raise binascii.Error(e)
+        raise ValueError('Invalid encrypted data')
     else:
         return cipher_decode
 
@@ -35,7 +35,7 @@ def encrypt(data: str, key: ByteString = EN_KEY) -> str:
 
 def decrypt(encrypted: ByteString, key: ByteString = EN_KEY) -> str:
     cipher = get_new_cipher(key=key)
-    ciphertext = ciphertext_decode(encrypted_token=encrypted)
+    ciphertext = ciphertext_decode(encrypted_data=encrypted)
     try:
         decrypted_token = unpad(cipher.decrypt(ciphertext), AES.block_size).decode('utf-8')
     except Exception as e:

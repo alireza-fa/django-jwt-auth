@@ -98,7 +98,7 @@ def verify_token(token: Token, client_info: Dict) -> bool:
     return True
 
 
-def logout_user(encrypted_refresh_token: ByteString, client_info: Dict) -> None:
+def black_refresh_token(encrypted_refresh_token: ByteString, client_info: Dict) -> None:
     decrypted_token = decrypt(encrypted=encrypted_refresh_token)
 
     token = validate_refresh_token(refresh_token=decrypted_token, client_info=client_info)

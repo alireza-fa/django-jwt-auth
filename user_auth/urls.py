@@ -13,4 +13,5 @@ urlpatterns = [
     path('verify/resend/', views.ResendVerifyMessage.as_view()),
     path('token/refresh/', views.JwtRefreshView.as_view()),
     path('token/verify/', views.JwtVerifyView.as_view()),
+    path('logout/', views.UserLogoutView.as_view()),
 ]

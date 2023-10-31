@@ -7,7 +7,8 @@ from .serializers import (UserLoginSerializer, UserRegisterSerializer,
                           UserVerifySerializer, ResendVerifyMessageSerializer,
                           RefreshTokenSerializer, TokenSerializer,)
 from .services import (user_login_func, user_register_func, user_verify_func,
-                       user_resend_func, refresh_token_func, check_verify_token_func,)
+                       user_resend_func, refresh_token_func, check_verify_token_func,
+                       user_logout_func,)
 
 
 class UserLoginView(APIView):
@@ -152,4 +153,13 @@ class UserLogoutView(APIView):
         return:
             return None
     """
-    pass
+    serializer_class = TokenSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user_logout_func(request=request, encrypted_token=serializer.validated_data['token'])
+        except ValueError:
+            return Response(data={"token": _('Invalid token.')}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status.HTTP_204_NO_CONTENT)
