@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Local apps
-    'jwt_auth.apps.JwtAuthConfig',
+    'user_auth.apps.UserAuthConfig',
     'accounts.apps.AccountsConfig',
     # Third party apps
     'drf_spectacular',

@@ -28,5 +28,5 @@ docs_urls = [
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', include('jwt_auth.urls')),
+    path('auth/', include('user_auth.urls')),
 ] + docs_urls
