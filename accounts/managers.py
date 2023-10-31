@@ -61,15 +61,3 @@ class UserManager(BaseUserManager):
         user.is_superuser = True
         user.save(using=self._db)
         return user
-
-
-class NotExpiredActiveManager(Manager):
-
-    def get_queryset(self):
-        return super().get_queryset().filter(expired_at__gt=timezone.now(), is_active=True)
-
-
-class NotExpiredManager(Manager):
-
-    def get_queryset(self):
-        return super().get_queryset().filter(expired_at__gt=timezone.now())
