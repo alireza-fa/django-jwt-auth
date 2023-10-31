@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
-from .validations import validate_phone_number
+from .validations import validate_phone_number, persian_to_english
 
 
 User = get_user_model()
@@ -36,3 +36,14 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             if users.exists():
                 return serializers.ValidationError(_('User with this email already exist.'))
         return email
+
+
+class UserVerifySerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=16)
+    code = serializers.CharField(min_length=6, max_length=6)
+
+    def validate_phone_number(self, value):
+        return validate_phone_number(phone_number=value)
+
+    def validate_code(self, value):
+        return persian_to_english(number=value)

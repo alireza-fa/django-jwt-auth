@@ -1,9 +1,11 @@
+from django.utils.translation import gettext_lazy as _
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from .serializers import UserLoginSerializer, UserRegisterSerializer
-from .services import user_login_func, user_register_func
+from .serializers import (UserLoginSerializer, UserRegisterSerializer,
+                          UserVerifySerializer)
+from .services import (user_login_func, user_register_func, user_verify_func,)
 
 
 class UserLoginView(APIView):
@@ -23,8 +25,8 @@ class UserLoginView(APIView):
         serializer.is_valid(raise_exception=True)
         try:
             user_login_func(request=request, phone_number=serializer.validated_data['phone_number'])
-        except PermissionError as e:
-            return Response(data={"detail": e}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        except PermissionError:
+            return Response(data={"detail": _('Please try again later')}, status=status.HTTP_406_NOT_ACCEPTABLE)
         return Response(status=status.HTTP_200_OK)
 
 
@@ -45,8 +47,8 @@ class UserRegisterView(APIView):
         vd = serializer.validated_data
         try:
             user_register_func(request=request, phone_number=vd['phone_number'], fullname=vd['fullname'])
-        except PermissionError as e:
-            return Response(data={"detail": e}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        except PermissionError:
+            return Response(data={"detail": _('Please try again later.')}, status=status.HTTP_406_NOT_ACCEPTABLE)
         return Response(status=status.HTTP_200_OK)
 
 
@@ -59,7 +61,17 @@ class UserVerifyView(APIView):
         return:
             return User info and Tokens
     """
-    pass
+    serializer_class = UserVerifySerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        vd = serializer.validated_data
+        try:
+            data = user_verify_func(request=request, code=vd['code'], phone_number=vd['phone_number'])
+        except ValueError:
+            return Response(data={"detail": _('Invalid code')}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(data=data, status=status.HTTP_200_OK)
 
 
 class ResendVerifyMessage(APIView):

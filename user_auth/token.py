@@ -5,8 +5,8 @@ from django.utils import timezone
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken, Token, UntypedToken
 
+from .models import UserLogin
 from .encryption import encrypt, decrypt
-from .services import get_user_login_by_refresh_token
 
 
 User = get_user_model()
@@ -37,8 +37,8 @@ def check_token_expire(token: Token) -> None:
 
 def check_validate_refresh_token(refresh_token: str) -> bool:
     try:
-        user_login = get_user_login_by_refresh_token(refresh_token=encrypt(data=str(refresh_token)))
-    except Exception as e:
+        user_login = UserLogin.objects.get(refresh_token=encrypt(data=str(refresh_token)))
+    except UserLogin.DoesNotExist:
         raise ValueError('Invalid token.')
     return True
 
@@ -96,8 +96,8 @@ def logout_user(encrypted_refresh_token: ByteString, client_info: Dict) -> None:
         raise ValueError('Invalid token')
 
     try:
-        user_login = get_user_login_by_refresh_token(refresh_token=str(token))
-    except Exception as e:
+        user_login = UserLogin.objects.get(refresh_token=encrypt(data=str(token)))
+    except UserLogin.DoesNotExist:
         raise ValueError('Invalid token')
 
     user_login.delete()

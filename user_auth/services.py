@@ -10,6 +10,9 @@ from django.utils import timezone
 from .models import UserLogin
 from .cache import (set_user_login_cache, set_user_register_cache, delete_user_auth_cache,
                     get_cache, incr_cache, set_cache)
+from .token import get_token_by_user
+from accounts.serializers import UserProfileSerializer
+
 
 User = get_user_model()
 
@@ -40,7 +43,7 @@ def create_user_login(user: User, token: Dict, client_info: Dict) -> UserLogin:
 
     return UserLogin.objects.create(
         user=user,
-        refresh_token=token['refresh'],
+        refresh_token=token['refresh_token'],
         device_name=client_info['device_name'],
         ip_address=client_info['ip_address'],
         last_login=timezone.now(),
@@ -48,6 +51,7 @@ def create_user_login(user: User, token: Dict, client_info: Dict) -> UserLogin:
     )
 
 
+# ========================== User Login And Register ===========================
 def check_number_allow_to_receive_sms(phone_number: str) -> bool:
     """
      Each number can only receive up to ten SMS for the code every twenty-four hours
@@ -97,10 +101,67 @@ def user_register_func(request: HttpRequest, phone_number: str, fullname: str,
         fullname=fullname, email=email)
 
     # TODO: send sms
+# ============ End User Login And Register ===========================================
 
 
-def user_verify_func():
-    pass
+# ============ User Verify =====================================================
+def check_access_to_try(phone_number: str) -> None:
+    key_try = phone_number + 'try'
+
+    try_count = get_cache(key=key_try)
+
+    if try_count is None:
+        raise ValueError('Invalid code.')
+
+    if try_count >= 5:
+        raise ValueError('Invalid code.')
+
+    incr_cache(key=key_try)
+
+
+def validate_code(phone_number: str, code: str, client_info) -> Dict:
+    check_access_to_try(phone_number=phone_number)
+
+    cache_info = get_cache(key=phone_number)
+
+    if cache_info is None:
+        raise ValueError('Invalid code.')
+
+    if cache_info['code'] != code:
+        raise ValueError('Invalid code.')
+
+    if cache_info['client_info'] != client_info:
+        raise ValueError('Invalid code')
+
+    return cache_info
+
+
+def user_verify_func(request: HttpRequest, code: str, phone_number: str) -> Dict:
+    client_info = get_client_info(request=request)
+
+    cache_info = validate_code(phone_number=phone_number, code=code, client_info=client_info)
+
+    if cache_info['state'] == 'register':
+        user = User.objects.create_user(phone_number=phone_number, fullname=cache_info['fullname'],
+                                        email=cache_info['email'])
+    else:
+        try:
+            user = User.objects.get(phone_number=phone_number)
+        except User.DoesNotExist:
+            raise ValueError('Invalid code.')
+
+    delete_user_auth_cache(phone_number=phone_number)
+
+    token = get_token_by_user(user=user, client_info=client_info)
+
+    create_user_login(user=user, token=token, client_info=client_info)
+
+    serializer = UserProfileSerializer(instance=user)
+
+    data = {"user": serializer.data, "token": token}
+
+    return data
+# ============= End User Verify ==================================
 
 
 def user_resend_func():

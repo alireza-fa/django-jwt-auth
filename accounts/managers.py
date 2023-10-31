@@ -12,12 +12,12 @@ def generate_password(pattern: str = digits + ascii_letters + punctuation, k: in
 
 
 class UserManager(BaseUserManager):
-
     def create_user(
             self,
             phone_number: str,
+            fullname: str,
+            email: str | None = None,
             password: str = generate_password(),
-            fullname: str | None = None,
     ):
         if phone_number is None:
             raise ValueError(_('User must have phone number'))
@@ -28,6 +28,8 @@ class UserManager(BaseUserManager):
             phone_number=phone_number,
             fullname=fullname,
         )
+        if email:
+            user.email = BaseUserManager.normalize_email(email=email)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -35,12 +37,14 @@ class UserManager(BaseUserManager):
     def create_admin(
             self,
             phone_number: str,
+            fullname: str,
+            email: str | None = None,
             password: str = generate_password(),
-            fullname: str | None = None,
     ):
         user = self.create_user(
             phone_number=phone_number,
             fullname=fullname,
+            email=email,
             password=password,
         )
         user.is_admin = True
@@ -50,12 +54,14 @@ class UserManager(BaseUserManager):
     def create_superuser(
             self,
             phone_number: str,
+            fullname: str,
+            email: str | None = None,
             password: str = generate_password(),
-            fullname: str | None = None,
     ):
         user = self.create_admin(
             phone_number=phone_number,
             fullname=fullname,
+            email=email,
             password=password,
         )
         user.is_superuser = True
