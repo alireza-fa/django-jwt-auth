@@ -1,5 +1,4 @@
 import base64
-import binascii
 from typing import ByteString
 
 from Crypto.Cipher import AES

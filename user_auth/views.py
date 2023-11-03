@@ -20,6 +20,9 @@ class UserLoginView(APIView):
         return:
             if user verify by password, return a Dictionary included(User Info, Tokens)
             if user verify by code or uuid, return None
+        Note:
+            If registration is done only with (mobile number or email), then login and register are done in one view
+             and function.
     """
     serializer_class = UserLoginSerializer
 
@@ -162,4 +165,4 @@ class UserLogoutView(APIView):
             user_logout_func(request=request, encrypted_token=serializer.validated_data['token'])
         except ValueError:
             return Response(data={"token": _('Invalid token.')}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
