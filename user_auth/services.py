@@ -209,7 +209,7 @@ def check_verify_token_func(request: HttpRequest, encrypted_token: str) -> bool:
 
     try:
         validated_token(encrypted_token=encrypted_token.encode(), client_info=client_info)
-    except:
+    except ValueError:
         return False
     return True
 

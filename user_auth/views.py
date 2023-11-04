@@ -121,7 +121,7 @@ class JwtRefreshView(APIView):
             access_token = refresh_token_func(
                 request=request,
                 encrypted_refresh_token=serializer.validated_data['refresh_token'])
-        except:
+        except ValueError:
             return Response(
                 data={"refresh_token": _('Invalid refresh token.')},
                 status=status.HTTP_400_BAD_REQUEST)
