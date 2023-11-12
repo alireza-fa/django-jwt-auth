@@ -28,9 +28,21 @@ Having a good caching mechanism, such as Redis or Memcached, is also recommended
 
 Please refer to the documentation below for further details on how to use and customize this project.
 
+<h3>How to use this project</h3>
+Since the authentication requirements vary for different systems, it is not possible to create a project that can meet
+our needs without any modifications.
+
+One system may use email and login code for authentication, while another system may require a username and password,
+and so on. Therefore, it is not feasible to handle all these scenarios in a single project.
+
+However, in this project, I have simplified the process as much as possible. You only need to customize the services.py
+module and define its corresponding views and URLs.
+Operations such as token encryption, token retrieval, and account logout do not require any modifications.
+
+To understand how to write the services.py module for your own project, refer to the views.py section of the user_auth
+app and read the documentation for each view. In general, you need to make any desired changes while ensuring that the
+output of the functions is compatible with the views. If you require more extensive modifications, you can also
+customize the views.
+
 Feel free to explore and contribute to this project. Any feedback and suggestions are welcome.
-
-<h3>Documentation:</h3>
-...
-
 </div>
