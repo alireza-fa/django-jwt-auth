@@ -135,7 +135,7 @@ REST_FRAMEWORK = {
     # YOUR SETTINGS
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'user_auth.authentication.CustomAuthentication',
+        'user_auth.authenticate.CustomAuthentication',
     )
 }
 
