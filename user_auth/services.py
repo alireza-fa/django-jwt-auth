@@ -57,6 +57,10 @@ def check_number_allow_to_receive_sms(phone_number: str) -> bool:
     """
      Each number can only receive up to ten SMS for the code every twenty-four hours
     """
+    login_info = get_cache(key=phone_number)
+    if login_info:
+        return False
+
     key = phone_number + 'otp_sms_count'
 
     sms_receive_count = get_cache(key=key)
