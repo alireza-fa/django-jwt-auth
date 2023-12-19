@@ -89,7 +89,7 @@ value: Bearer access_token
 
 /accounts/profile/update/
 
-متدش چون partial update هستش پس patch هستش. تنها چیزی که کاربر میتونه آپدیت کنه fullname هستش.
+متدش چون partial update هستش پس patch هستش. فیلذ هایی که کاربر میتونه اپدیت کنه با توجه به پروژه مشخص میشه.
 
 
 /accounts/logout/
