@@ -53,12 +53,16 @@ def create_user_login(user: User, token: Dict, client_info: Dict) -> UserLogin:
 
 
 # ========================== User Login And Register ===========================
-def check_number_allow_to_receive_sms(phone_number: str) -> bool:
+def check_number_allow_to_receive_sms(phone_number: str, ip_address: str) -> bool:
     """
      Each number can only receive up to ten SMS for the code every twenty-four hours
     """
     login_info = get_cache(key=phone_number)
     if login_info:
+        return False
+
+    has_ip_address = get_cache(key=ip_address)
+    if has_ip_address:
         return False
 
     key = phone_number + 'otp_sms_count'
@@ -78,13 +82,13 @@ def check_number_allow_to_receive_sms(phone_number: str) -> bool:
 
 
 def user_login_func(request: HttpRequest, phone_number: str) -> None:
-    allow_sms = check_number_allow_to_receive_sms(phone_number=phone_number)
+    client_info = get_client_info(request=request)
+
+    allow_sms = check_number_allow_to_receive_sms(phone_number=phone_number, ip_address=client_info["ip_address"])
     if allow_sms is False:
         raise PermissionError('access denied.')
 
     code = generate_otp_code()
-
-    client_info = get_client_info(request=request)
 
     set_user_login_cache(client_info=client_info, code=code, phone_number=phone_number)
 
@@ -93,13 +97,13 @@ def user_login_func(request: HttpRequest, phone_number: str) -> None:
 
 def user_register_func(request: HttpRequest, phone_number: str, fullname: str,
                        email: Optional[str] = None) -> None:
-    allow_sms = check_number_allow_to_receive_sms(phone_number=phone_number)
+    client_info = get_client_info(request=request)
+
+    allow_sms = check_number_allow_to_receive_sms(phone_number=phone_number, ip_address=client_info["ip_address"])
     if allow_sms is False:
         raise PermissionError('access denied.')
 
     code = generate_otp_code()
-
-    client_info = get_client_info(request=request)
 
     set_user_register_cache(
         client_info=client_info, code=code, phone_number=phone_number,
@@ -176,13 +180,13 @@ def user_resend_func(phone_number: str, request: HttpRequest) -> None:
     if user_info is None:
         raise PermissionError('access denied.')
 
-    allow_sms = check_number_allow_to_receive_sms(phone_number=phone_number)
+    client_info = get_client_info(request=request)
+
+    allow_sms = check_number_allow_to_receive_sms(phone_number=phone_number, ip_address=client_info["ip_address"])
     if allow_sms is False:
         raise PermissionError('access denied.')
 
     code = generate_otp_code()
-
-    client_info = get_client_info(request=request)
 
     if client_info != user_info['client_info']:
         raise PermissionError('access denied.')
