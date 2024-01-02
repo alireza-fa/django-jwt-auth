@@ -10,7 +10,7 @@ User = get_user_model()
 
 class UserLogin(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='logins', verbose_name=_('user'))
-    refresh_token = models.CharField(max_length=450, verbose_name=_('refresh_token'))
+    refresh_token = models.CharField(max_length=1000, verbose_name=_('refresh_token'))
     expired_at = models.DateTimeField(verbose_name=_('expired at'))
     device_name = models.CharField(max_length=64, verbose_name=_('device name'))
     ip_address = models.GenericIPAddressField(verbose_name=_('ip address'))
