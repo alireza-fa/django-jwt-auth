@@ -48,6 +48,7 @@ def set_user_register_cache(
     set_cache(key=phone_number, value=value, timeout=120)
     set_cache(key=key_user_info, value=user_info, timeout=600)
     set_cache(key=user_try_key, value=0, timeout=120)
+    set_cache(key=client_info["ip_address"], value=1, timeout=120)
 
 
 def set_user_login_cache(client_info: Dict, code: str, phone_number: str) -> None:
@@ -62,6 +63,7 @@ def set_user_login_cache(client_info: Dict, code: str, phone_number: str) -> Non
     set_cache(key=phone_number, value=value, timeout=120)
     set_cache(key=key_user_info, value=user_info, timeout=600)
     set_cache(key=user_try_key, value=0, timeout=120)
+    set_cache(key=client_info["ip_address"], value=1, timeout=120)
 
 
 def set_user_resend_cache(
@@ -82,6 +84,5 @@ def delete_user_auth_cache(phone_number):
     key_user_info = phone_number + 'info'
     user_try_key = phone_number + 'try'
 
-    delete_cache(key=phone_number)
     delete_cache(key_user_info)
     delete_cache(user_try_key)
