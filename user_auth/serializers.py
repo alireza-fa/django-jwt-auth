@@ -49,6 +49,12 @@ class UserVerifySerializer(serializers.Serializer):
         return persian_to_english(number=value)
 
 
+class UserVerifyResponseSerializer(serializers.Serializer):
+    access_token = serializers.CharField()
+    refresh_token = serializers.CharField()
+    profile = serializers.SerializerMethodField()
+
+
 class ResendVerifyMessageSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=16)
 
@@ -58,6 +64,10 @@ class ResendVerifyMessageSerializer(serializers.Serializer):
 
 class RefreshTokenSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
+
+
+class AccessTokenSerializer(serializers.Serializer):
+    access_token = serializers.CharField()
 
 
 class TokenSerializer(serializers.Serializer):

@@ -2,10 +2,12 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from drf_spectacular.utils import extend_schema
 
 from .serializers import (UserLoginSerializer, UserRegisterSerializer,
                           UserVerifySerializer, ResendVerifyMessageSerializer,
-                          RefreshTokenSerializer, TokenSerializer,)
+                          RefreshTokenSerializer, TokenSerializer, UserVerifyResponseSerializer,
+                          AccessTokenSerializer, )
 from .services import (user_login_func, user_register_func, user_verify_func,
                        user_resend_func, refresh_token_func, check_verify_token_func,
                        user_logout_func,)
@@ -26,6 +28,7 @@ class UserLoginView(APIView):
     """
     serializer_class = UserLoginSerializer
 
+    @extend_schema(request=UserLoginSerializer, responses=None)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -47,6 +50,7 @@ class UserRegisterView(APIView):
     """
     serializer_class = UserRegisterSerializer
 
+    @extend_schema(request=UserRegisterSerializer, responses=None)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -69,6 +73,7 @@ class UserVerifyView(APIView):
     """
     serializer_class = UserVerifySerializer
 
+    @extend_schema(request=UserVerifySerializer, responses=UserVerifyResponseSerializer)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -92,6 +97,7 @@ class ResendVerifyMessage(APIView):
     """
     serializer_class = ResendVerifyMessageSerializer
 
+    @extend_schema(request=ResendVerifyMessageSerializer, responses=None)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -114,6 +120,7 @@ class JwtRefreshView(APIView):
     """
     serializer_class = RefreshTokenSerializer
 
+    @extend_schema(request=RefreshTokenSerializer, responses=AccessTokenSerializer)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -136,6 +143,7 @@ class JwtVerifyView(APIView):
     """
     serializer_class = TokenSerializer
 
+    @extend_schema(request=TokenSerializer, responses=None)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -158,6 +166,7 @@ class UserLogoutView(APIView):
     """
     serializer_class = TokenSerializer
 
+    @extend_schema(request=RefreshTokenSerializer, responses=None)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
