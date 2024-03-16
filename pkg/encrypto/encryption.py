@@ -5,8 +5,6 @@ from Crypto.Cipher import AES
 from Crypto.Cipher._mode_ecb import EcbMode
 from Crypto.Util.Padding import pad, unpad
 
-from .config import EN_KEY
-
 
 def get_new_cipher(key: ByteString) -> EcbMode:
     return AES.new(key, AES.MODE_ECB)
@@ -25,14 +23,14 @@ def ciphertext_decode(encrypted_data: ByteString) -> bytes:
         return cipher_decode
 
 
-def encrypt(data: str, key: ByteString = EN_KEY) -> str:
+def encrypt(data: str, key: ByteString) -> str:
     cipher = get_new_cipher(key=key)
     ciphertext = ciphertext_encrypt(cipher=cipher, data=data)
     encrypted = base64.b64encode(ciphertext).decode('utf-8')
     return encrypted
 
 
-def decrypt(encrypted: ByteString, key: ByteString = EN_KEY) -> str:
+def decrypt(encrypted: ByteString, key: ByteString) -> str:
     cipher = get_new_cipher(key=key)
     ciphertext = ciphertext_decode(encrypted_data=encrypted)
     try:
