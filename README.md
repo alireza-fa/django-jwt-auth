@@ -28,6 +28,11 @@ Having a good caching mechanism, such as Redis or Memcached, is also recommended
 
 Please refer to the documentation below for further details on how to use and customize this project.
 
+for creating crypto key:
+from Crypto import Random
+
+print(Random.get_Random_bytes(32))
+
 <h3>How to use this project</h3>
 Since the authentication requirements vary for different systems, it is not possible to create a project that can meet
 our needs without any modifications.
