@@ -2,30 +2,25 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils.translation import gettext_lazy as _
 
-from .managers import UserManager
+from .managers import BaseUserManager
 
 
-class User(AbstractBaseUser, PermissionsMixin):
-    phone_number = models.CharField(max_length=18, unique=True, db_index=True, verbose_name=_('phone number'))
-    fullname = models.CharField(max_length=34, verbose_name=_('fullname'))
-    email = models.EmailField(max_length=120, null=True, blank=True, verbose_name=_('email'))
-    is_active = models.BooleanField(default=True, db_index=True, verbose_name=_('is active'))
-    is_ban = models.BooleanField(default=False, db_index=True, verbose_name=_('is ban'))
+class BaseUser(AbstractBaseUser, PermissionsMixin):
+    username = models.CharField(max_length=32, verbose_name=_('username'), unique=True)
+    phone_number = models.CharField(max_length=11, unique=True, verbose_name=_('phone number'))
+    email = models.EmailField(max_length=64, verbose_name=_("email"), null=True, blank=True)
+    is_active = models.BooleanField(default=True, verbose_name=_('is active'))
     is_admin = models.BooleanField(default=False, verbose_name=_('is admin'))
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
 
-    objects = UserManager()
+    objects = BaseUserManager()
 
     USERNAME_FIELD = 'phone_number'
-    REQUIRED_FIELDS = ('fullname',)
 
-    class Meta:
-        verbose_name = _('User')
-        verbose_name_plural = _('Users')
+    REQUIRED_FIELDS = ("username",)
 
     def __str__(self):
-        return self.phone_number
+        return self.username
 
+    @property
     def is_staff(self):
         return self.is_admin

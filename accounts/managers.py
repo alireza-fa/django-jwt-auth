@@ -1,67 +1,56 @@
-from django.contrib.auth.models import BaseUserManager
-from django.utils.translation import gettext_lazy as _
-
-from string import digits, ascii_letters, punctuation
-from random import choices
+from django.contrib.auth.models import BaseUserManager as BaseManager
 
 
-def generate_password(pattern: str = digits + ascii_letters + punctuation, k: int = 12):
-    return ''.join(choices(pattern, k=k))
+class BaseUserManager(BaseManager):
 
-
-class UserManager(BaseUserManager):
-    def create_user(
-            self,
-            phone_number: str,
-            fullname: str,
-            email: str | None = None,
-            password: str = generate_password(),
-    ):
-        if phone_number is None:
-            raise ValueError(_('User must have phone number'))
-        elif password is None:
-            raise ValueError(_('User must have password'))
+    def create_user(self, username, phone_number, email=None,
+                    is_active=True, is_admin=False, is_superuser=False, password=None):
+        if not username:
+            raise ValueError('Users must have an fullname')
+        if not phone_number:
+            raise ValueError('Users must have an phone_number')
 
         user = self.model(
+            username=username,
             phone_number=phone_number,
-            fullname=fullname,
+            email=BaseManager.normalize_email(email),
+            is_active=is_active,
+            is_admin=is_admin,
+            is_superuser=is_superuser,
         )
-        if email:
-            user.email = BaseUserManager.normalize_email(email=email)
-        user.set_password(password)
+
+        if password is not None:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
+
+        user.full_clean()
         user.save(using=self._db)
+
         return user
 
-    def create_admin(
-            self,
-            phone_number: str,
-            fullname: str,
-            email: str | None = None,
-            password: str = generate_password(),
-    ):
+    def create_admin(self, username, phone_number, email=None,
+                     is_active=True, is_admin=True, is_superuser=False, password=None):
         user = self.create_user(
+            username=username,
             phone_number=phone_number,
-            fullname=fullname,
-            email=email,
+            email=BaseManager.normalize_email(email),
+            is_active=is_active,
+            is_admin=is_admin,
+            is_superuser=is_superuser,
             password=password,
         )
-        user.is_admin = True
-        user.save(using=self._db)
         return user
 
-    def create_superuser(
-            self,
-            phone_number: str,
-            fullname: str,
-            email: str | None = None,
-            password: str = generate_password(),
-    ):
-        user = self.create_admin(
+    def create_superuser(self, username, phone_number, email=None,
+                         is_active=True, is_admin=True, is_superuser=True, password=None):
+        user = self.create_user(
+            username=username,
             phone_number=phone_number,
-            fullname=fullname,
-            email=email,
+            email=BaseManager.normalize_email(email),
+            is_active=is_active,
+            is_admin=is_admin,
+            is_superuser=is_superuser,
             password=password,
         )
-        user.is_superuser = True
-        user.save(using=self._db)
         return user
