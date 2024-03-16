@@ -39,8 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Local apps
-    'user_auth.apps.UserAuthConfig',
+    'authentication.apps.AuthenticationConfig',
     'accounts.apps.AccountsConfig',
+    'api.apps.ApiConfig',
     # Third party apps
     'drf_spectacular',
 
@@ -135,7 +136,7 @@ REST_FRAMEWORK = {
     # YOUR SETTINGS
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'user_auth.authenticate.CustomAuthentication',
+        'authentication.authenticate.CustomAuthentication',
     )
 }
 
@@ -158,3 +159,5 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=31),
 }
+
+ENCRYPT_KEY = b'\xcaN\x9cO\xf4B\xe8\xb2+\xea\xdbh--6\xd7\xf5u\x18\x9f\x0c\xa5\xf0\xe9\xd6\x8aQ\xe2\xafp\xf8\xff'
