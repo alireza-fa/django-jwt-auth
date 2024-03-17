@@ -7,9 +7,9 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import Token
 
 from pkg.encrypto.encryption import encrypt, decrypt
-from pkg.token.token import validate_token
 from utils import client
-from pkg.token.token import generate_access_token_with_claims, get_token_claims
+from pkg.token.token import (generate_access_token_with_claims, get_token_claims,
+                             generate_refresh_token_with_claims, validate_token)
 
 User = get_user_model()
 
@@ -17,6 +17,7 @@ IP_ADDRESS = "ip_address"
 DEVICE_NAME = "device_name"
 USER_ID = "id"
 USERNAME = "username"
+EMAIL = "email"
 IS_ACTIVE = "is_active"
 IS_ADMIN = "is_admin"
 
@@ -31,6 +32,7 @@ access_token_claims = {
     DEVICE_NAME: "",
     USER_ID: 0,
     USERNAME: "",
+    EMAIL: "",
     IS_ACTIVE: False,
     IS_ADMIN: False,
 }
@@ -38,6 +40,7 @@ access_token_claims = {
 user_to_map = {
     USER_ID: 0,
     USERNAME: "",
+    EMAIL: "",
     IS_ACTIVE: "",
     IS_ADMIN: "",
 }
@@ -49,7 +52,7 @@ def get_refresh_token_claims(**kwargs) -> Dict:
     claims[DEVICE_NAME] = ""
 
     for key in claims:
-        claims[key] = kwargs.get(key)
+        claims[key] = kwargs[key]
 
     return claims
 
@@ -60,7 +63,7 @@ def get_access_token_claims(**kwargs) -> Dict:
     claims[DEVICE_NAME] = ""
 
     for key in claims:
-        claims[key] = kwargs.get(key)
+        claims[key] = kwargs[key]
 
     return claims
 
@@ -100,7 +103,7 @@ def refresh_access_token(request: HttpRequest, refresh_token: str) -> str:
     user = User.objects.get(id=token[USER_ID])
 
     client_info = client.get_client_info(request=request)
-    claims = get_access_token_claims(**client_info, user_id=user.id, username=user.username, email=user.email)
+    claims = get_access_token_claims(**client_info, **user.__dict__)
 
     return generate_access_token_with_claims(claims=claims, encrypt_func=encrypt_token)
 
@@ -112,3 +115,17 @@ def get_user_by_access_token(token: Token) -> User:
     return User(
         **user_to_map
     )
+
+
+def generate_token(client_info: Dict, user: User) -> Dict:
+    refresh_token = generate_refresh_token_with_claims(
+        claims=get_refresh_token_claims(**client_info, id=user.id), encrypt_func=encrypt_token)
+
+    access_token = generate_access_token_with_claims(
+        claims=get_access_token_claims(**client_info, **user.__dict__),
+        encrypt_func=encrypt_token)
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+    }

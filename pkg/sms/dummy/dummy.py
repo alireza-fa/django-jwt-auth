@@ -1,6 +1,6 @@
 import functools
 
-from apps.pkg.sms.base import Sms
+from pkg.sms.base import Sms
 
 
 class DummySmsService(Sms):
