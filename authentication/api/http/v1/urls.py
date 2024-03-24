@@ -12,4 +12,5 @@ urlpatterns = [
     # token
     path("token/verify/", token.VerifyTokenView.as_view()),
     path("token/refresh/", token.RefreshAccessToken.as_view()),
+    path("token/ban/", token.BanRefreshTokenView.as_view()),
 ]

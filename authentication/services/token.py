@@ -3,6 +3,7 @@ from typing import Dict
 from django.conf import settings
 from django.http import HttpRequest
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from rest_framework_simplejwt.tokens import Token
 
@@ -10,6 +11,7 @@ from pkg.encrypto.encryption import encrypt, decrypt
 from utils import client
 from pkg.token.token import (generate_access_token_with_claims, get_token_claims,
                              generate_refresh_token_with_claims, validate_token)
+from utils.cache import set_cache, get_cache
 
 User = get_user_model()
 
@@ -76,10 +78,16 @@ def decrypt_token(token: str) -> str:
     return decrypt(encrypted=token.encode(), key=settings.ENCRYPT_KEY)
 
 
+def verify_token_func(token: Token):
+    if token["token_type"] == "refresh":
+        if get_cache(key=str(token)):
+            raise ValueError("Invalid refresh token")
+
+
 def verify_token(*, request: HttpRequest, token: str) -> bool:
     try:
         token_string = decrypt_token(token=token)
-        token = validate_token(string_token=token_string)
+        token = validate_token(string_token=token_string, func=verify_token_func)
     except ValueError:
         return False
 
@@ -93,17 +101,22 @@ def verify_token(*, request: HttpRequest, token: str) -> bool:
 def validate_refresh_token(token: Token):
     if token["token_type"] != "refresh":
         raise ValueError("Invalid refresh token")
+    if get_cache(key=str(token)):
+        raise ValueError("Invalid refresh token")
 
 
 def refresh_access_token(request: HttpRequest, refresh_token: str) -> str:
     refresh_token_str = decrypt_token(token=refresh_token)
 
-    token = validate_token(string_token=refresh_token_str)
+    token = validate_token(string_token=refresh_token_str, func=validate_refresh_token)
 
     user = User.objects.get(id=token[USER_ID])
 
     client_info = client.get_client_info(request=request)
     claims = get_access_token_claims(**client_info, **user.__dict__)
+
+    user.last_login = timezone.now()
+    user.save()
 
     return generate_access_token_with_claims(claims=claims, encrypt_func=encrypt_token)
 
@@ -125,7 +138,18 @@ def generate_token(client_info: Dict, user: User) -> Dict:
         claims=get_access_token_claims(**client_info, **user.__dict__),
         encrypt_func=encrypt_token)
 
+    user.last_login = timezone.now()
+    user.save()
+
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
     }
+
+
+def ban_token(encrypted_token: str) -> None:
+    decrypted_token = decrypt_token(token=encrypted_token)
+
+    token = validate_token(string_token=decrypted_token, func=validate_refresh_token)
+
+    set_cache(key=str(token), value=1, timeout=settings.REFRESH_TOKEN_TOKEN_LIFETIME_TO_DAYS*24*60*60)

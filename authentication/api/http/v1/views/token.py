@@ -4,8 +4,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 from drf_spectacular.utils import extend_schema
 
-from ..serializers.token import TokenSerializer, RefreshAccessTokenSerializer
-from authentication.services.token import verify_token, refresh_access_token
+from ..serializers.token import TokenSerializer, RefreshAccessTokenSerializer, RefreshTokenSerializer
+from authentication.services.token import verify_token, refresh_access_token, ban_token
 from api.response import base_response, base_response_with_error, base_response_with_validation_error
 from api import response_code
 
@@ -46,5 +46,22 @@ class RefreshAccessToken(APIView):
 
             return base_response(status_code=status.HTTP_200_OK, code=response_code.OK,
                                  result={"access_token": access_token})
+
+        return base_response_with_validation_error(error=serializer.errors)
+
+
+class BanRefreshTokenView(APIView):
+    serializer_class = RefreshTokenSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            try:
+                ban_token(encrypted_token=serializer.validated_data["refresh_token"])
+            except ValueError:
+                return base_response_with_error(status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                                                code=response_code.INVALID_TOKEN)
+
+            return base_response(status_code=status.HTTP_200_OK, code=response_code.OK)
 
         return base_response_with_validation_error(error=serializer.errors)
