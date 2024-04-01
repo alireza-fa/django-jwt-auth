@@ -4,18 +4,20 @@ from rest_framework.views import APIView
 from rest_framework import status
 from drf_spectacular.utils import extend_schema
 
-from authentication.v1.serializers.token import TokenSerializer, RefreshAccessTokenSerializer, RefreshTokenSerializer
+from authentication.v1.serializers.token import TokenSerializer, RefreshAccessTokenSerializer, RefreshTokenSerializer, \
+    AccessTokenSerializer
 from authentication.v1.services.token import verify_token, refresh_access_token, ban_token
 from api.response import base_response, base_response_with_error, base_response_with_validation_error
 from api import response_code
 
 User = get_user_model()
+SCHEMA_TAGS = ("Auth",)
 
 
 class VerifyTokenView(APIView):
     serializer_class = TokenSerializer
 
-    @extend_schema(request=TokenSerializer, responses=None)
+    @extend_schema(request=TokenSerializer, responses=None, tags=SCHEMA_TAGS)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -33,6 +35,7 @@ class VerifyTokenView(APIView):
 class RefreshAccessToken(APIView):
     serializer_class = RefreshAccessTokenSerializer
 
+    @extend_schema(request=RefreshAccessTokenSerializer, responses=AccessTokenSerializer, tags=SCHEMA_TAGS)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -53,6 +56,7 @@ class RefreshAccessToken(APIView):
 class BanRefreshTokenView(APIView):
     serializer_class = RefreshTokenSerializer
 
+    @extend_schema(request=RefreshTokenSerializer, responses=None, tags=SCHEMA_TAGS)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():

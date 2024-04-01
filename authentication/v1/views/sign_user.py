@@ -10,11 +10,13 @@ from authentication.v1.serializers.sign_user import (UserLoginByPasswordSerializ
 from authentication import exceptions
 from drf_spectacular.utils import extend_schema
 
+SCHEMA_TAGS = ("Auth",)
+
 
 class UserLoginByPasswordView(APIView):
     serializer_class = UserLoginByPasswordSerializer
 
-    @extend_schema(request=UserLoginByPasswordSerializer, responses=AuthenticatedResponseSerializer)
+    @extend_schema(request=UserLoginByPasswordSerializer, responses=AuthenticatedResponseSerializer, tags=SCHEMA_TAGS)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -33,6 +35,7 @@ class UserLoginByPasswordView(APIView):
 class LoginByPhoneNumberView(APIView):
     serializer_class = LoginByPhoneNumberSerializer
 
+    @extend_schema(request=LoginByPhoneNumberSerializer, responses=None, tags=SCHEMA_TAGS)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -54,6 +57,7 @@ class LoginByPhoneNumberView(APIView):
 class VerifySignUserView(APIView):
     serializer_class = VerifySignUserSerializer
 
+    @extend_schema(request=VerifySignUserSerializer, responses=AuthenticatedResponseSerializer, tags=SCHEMA_TAGS)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -74,7 +78,7 @@ class VerifySignUserView(APIView):
 class RegisterView(APIView):
     serializer_class = RegisterSerializer
 
-    @extend_schema(request=RegisterSerializer, responses=None)
+    @extend_schema(request=RegisterSerializer, responses=None, tags=SCHEMA_TAGS)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
