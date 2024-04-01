@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import Token
 from rest_framework_simplejwt.exceptions import InvalidToken
 
 from pkg.encrypto.encryption import decrypt
-from authentication.services.token import get_user_by_access_token
+from authentication.v1.services.token import get_user_by_access_token
 
 User = get_user_model()
 

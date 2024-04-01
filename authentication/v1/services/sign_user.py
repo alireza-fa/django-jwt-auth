@@ -8,7 +8,7 @@ from utils.otp import generate_otp_code
 from authentication.exceptions import IpBlocked, AuthFieldNotAllowedToReceiveSms, InvalidCode
 from pkg.sms.sms import get_sms_service
 from utils import client
-from authentication.services.token import generate_token
+from authentication.v1.services.token import generate_token
 from utils.cache import get_cache, set_cache, incr_cache, delete_cache
 
 User = get_user_model()

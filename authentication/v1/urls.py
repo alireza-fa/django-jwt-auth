@@ -1,7 +1,6 @@
 from django.urls import path
 
-from authentication.api.http.v1.views import sign_user, token
-
+from authentication.v1.views import sign_user, token
 
 urlpatterns = [
     # sign
