@@ -137,17 +137,26 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authentication.authenticate.CustomAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
 
 
 # Spectacular
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Your Project API',
-    'DESCRIPTION': 'Your project description',
+    'TITLE': 'Django Jwt Auth',
+    'DESCRIPTION': 'django-jwt-auth is an application for authenticating users with jwt in Django with very high'
+                   ' security and practical features',
     'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
+    'SERVE_INCLUDE_SCHEMA': True,
     # OTHER SETTINGS
+    'PLUGINS': [
+        'drf_spectacular.plugins.AuthPlugin',
+    ],
+    # 'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAdminUser'],
+    # Auth with session only in docs without effect to api
+    'SERVE_AUTHENTICATION': ["rest_framework.authentication.SessionAuthentication",
+                             "rest_framework_simplejwt.authentication.JWTAuthentication"],
 }
 
 

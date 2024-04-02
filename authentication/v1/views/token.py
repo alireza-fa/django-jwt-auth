@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
+from rest_framework.permissions import IsAuthenticated
 
 from rest_framework.views import APIView
 from rest_framework import status
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 from authentication.v1.serializers.token import TokenSerializer, RefreshAccessTokenSerializer, RefreshTokenSerializer, \
     AccessTokenSerializer
@@ -35,7 +36,9 @@ class VerifyTokenView(APIView):
 class RefreshAccessToken(APIView):
     serializer_class = RefreshAccessTokenSerializer
 
-    @extend_schema(request=RefreshAccessTokenSerializer, responses=AccessTokenSerializer, tags=SCHEMA_TAGS)
+    @extend_schema(request=RefreshAccessTokenSerializer, responses={
+        200: OpenApiResponse(response=AccessTokenSerializer, description="new access token"),
+        401: OpenApiResponse(description="invalid access token")}, tags=SCHEMA_TAGS)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -55,8 +58,10 @@ class RefreshAccessToken(APIView):
 
 class BanRefreshTokenView(APIView):
     serializer_class = RefreshTokenSerializer
+    permission_classes = (IsAuthenticated,)
 
-    @extend_schema(request=RefreshTokenSerializer, responses=None, tags=SCHEMA_TAGS)
+    @extend_schema(request=RefreshTokenSerializer, responses={200: OpenApiResponse(response=None, description="Ok"), 401: OpenApiResponse(response=None, description="bad request")}, tags=SCHEMA_TAGS)
+    @extend_schema(responses={401: None}, tags=SCHEMA_TAGS)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
