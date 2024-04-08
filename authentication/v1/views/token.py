@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from rest_framework.views import APIView
 from rest_framework import status
-from drf_spectacular.utils import extend_schema, OpenApiResponse
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 
 from authentication.v1.serializers.token import TokenSerializer, RefreshAccessTokenSerializer, RefreshTokenSerializer, \
     AccessTokenSerializer
@@ -38,7 +38,10 @@ class RefreshAccessToken(APIView):
 
     @extend_schema(request=RefreshAccessTokenSerializer, responses={
         200: OpenApiResponse(response=AccessTokenSerializer, description="new access token"),
-        401: OpenApiResponse(description="invalid access token")}, tags=SCHEMA_TAGS)
+        401: OpenApiResponse(response=RefreshTokenSerializer,
+                             description="invalid refresh token",
+                             examples=[OpenApiExample(name="refresh_token", value="invalid refresh_token")])},
+                   tags=SCHEMA_TAGS)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
