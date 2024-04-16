@@ -1,16 +1,29 @@
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from rest_framework import status
 from rest_framework.views import APIView
 
+from accounts.serializers.user import UserNotFoundErrorSerializer
 from api import response_code
 from api.response import base_response_with_error, base_response, base_response_with_validation_error
-from authentication.v1.services.sign_user import login_by_password, register_user, login_by_phone_number, \
-    verify_sign_user
-from authentication.v1.serializers.sign_user import (UserLoginByPasswordSerializer, AuthenticatedResponseSerializer, RegisterSerializer,
-                                                     LoginByPhoneNumberSerializer, VerifySignUserSerializer, )
+from authentication.v1.services.sign_user import register_user, login_by_phone_number, verify_sign_user, \
+    login_by_password
+from authentication.v1.serializers.sign_user import RegisterSerializer, \
+    LoginByPhoneNumberSerializer, VerifySignUserSerializer, IpBlockedErrorSerializer, \
+    AuthFieldNotAllowedToReceiveSmsErrorSerializer, LoginByPhoneNumberResponseSerializer, \
+    LoginByPhoneNumberBadRequestSerializer, VerifySignUserResponseSerializer, VerifySignUserBadRequestSerializer, \
+    InvalidCodeErrSerializer, RegisterResponseSerializer, RegisterBadRequestSerializer, UserExistSerializer, \
+    UserLoginByPasswordSerializer, AuthenticatedResponseSerializer
 from authentication import exceptions
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiExample
+from drf_spectacular.utils import OpenApiRequest, OpenApiResponse
+
+from api.swagger_fields import PHONE_NUMBER_DESCRIPTION, REGISTER_EXAMPLE_VALUE, \
+    LOGIN_BY_PHONE_NUMBER_EXAMPLE_VALUE, LOGIN_BY_PHONE_NUMBER_200_DESCRIPTION, IP_BLOCKED_DESCRIPTION, \
+    VERIFY_SIGN_EXAMPLE_VALUE, OTP_CODE_DESCRIPTION, USERNAME_DESCRIPTION, REGISTER_200_DESCRIPTION
 
 SCHEMA_TAGS = ("Auth",)
+User = get_user_model()
 
 
 class UserLoginByPasswordView(APIView):
@@ -35,7 +48,16 @@ class UserLoginByPasswordView(APIView):
 class LoginByPhoneNumberView(APIView):
     serializer_class = LoginByPhoneNumberSerializer
 
-    @extend_schema(request=LoginByPhoneNumberSerializer, responses=None, tags=SCHEMA_TAGS)
+    @extend_schema(
+        request=OpenApiRequest(request=LoginByPhoneNumberSerializer, examples=[
+            OpenApiExample(name="phone_number", value=LOGIN_BY_PHONE_NUMBER_EXAMPLE_VALUE, description=PHONE_NUMBER_DESCRIPTION)]),
+        responses={
+            200: OpenApiResponse(response=LoginByPhoneNumberResponseSerializer, description=LOGIN_BY_PHONE_NUMBER_200_DESCRIPTION),
+            400: OpenApiResponse(response=LoginByPhoneNumberBadRequestSerializer, description="bad request"),
+            403: OpenApiResponse(response=IpBlockedErrorSerializer, description=IP_BLOCKED_DESCRIPTION),
+            404: OpenApiResponse(response=UserNotFoundErrorSerializer),
+            429: OpenApiResponse(response=AuthFieldNotAllowedToReceiveSmsErrorSerializer)},
+        tags=SCHEMA_TAGS)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -43,7 +65,7 @@ class LoginByPhoneNumberView(APIView):
                 login_by_phone_number(request=request, phone_number=serializer.validated_data["phone_number"])
             except exceptions.IpBlocked:
                 return base_response_with_error(status_code=status.HTTP_403_FORBIDDEN, code=response_code.IP_BLOCKED)
-            except exceptions.UserNotFound:
+            except User.DoesNotExist:
                 return base_response_with_error(status_code=status.HTTP_404_NOT_FOUND, code=response_code.USER_NOT_FOUND)
             except exceptions.AuthFieldNotAllowedToReceiveSms:
                 return base_response_with_error(status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -57,7 +79,18 @@ class LoginByPhoneNumberView(APIView):
 class VerifySignUserView(APIView):
     serializer_class = VerifySignUserSerializer
 
-    @extend_schema(request=VerifySignUserSerializer, responses=AuthenticatedResponseSerializer, tags=SCHEMA_TAGS)
+    @extend_schema(
+        request=OpenApiRequest(request=VerifySignUserSerializer, examples=[
+            OpenApiExample(name="code", value=VERIFY_SIGN_EXAMPLE_VALUE, description=OTP_CODE_DESCRIPTION,),
+            OpenApiExample(name="phone_number", value=VERIFY_SIGN_EXAMPLE_VALUE, description=PHONE_NUMBER_DESCRIPTION)]),
+        responses={
+            200: OpenApiResponse(response=VerifySignUserResponseSerializer),
+            400: OpenApiResponse(response=VerifySignUserBadRequestSerializer),
+            404: OpenApiResponse(response=UserNotFoundErrorSerializer),
+            406: OpenApiResponse(response=InvalidCodeErrSerializer),
+            409: OpenApiResponse(response=UserExistSerializer),
+        },
+        tags=SCHEMA_TAGS)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -67,8 +100,11 @@ class VerifySignUserView(APIView):
             except exceptions.InvalidCode:
                 return base_response_with_error(status_code=status.HTTP_406_NOT_ACCEPTABLE,
                                                 code=response_code.INVALID_CODE)
-            except exceptions.UserNotFound:
+            except User.DoesNotExist:
                 return base_response_with_error(status_code=status.HTTP_404_NOT_FOUND, code=response_code.USER_NOT_FOUND)
+            except ValidationError:
+                return base_response_with_error(status_code=status.HTTP_409_CONFLICT,
+                                                code=response_code.USER_EXIST)
 
             return base_response(status_code=status.HTTP_200_OK, code=response_code.OK, result=token)
 
@@ -78,7 +114,17 @@ class VerifySignUserView(APIView):
 class RegisterView(APIView):
     serializer_class = RegisterSerializer
 
-    @extend_schema(request=RegisterSerializer, responses=None, tags=SCHEMA_TAGS)
+    @extend_schema(
+        request=OpenApiRequest(request=RegisterSerializer, examples=[
+            OpenApiExample(name="username", value=REGISTER_EXAMPLE_VALUE, description=USERNAME_DESCRIPTION),
+            OpenApiExample(name="phone_number", value=REGISTER_EXAMPLE_VALUE, description=PHONE_NUMBER_DESCRIPTION)]),
+        responses={
+            200: OpenApiResponse(response=RegisterResponseSerializer, description=REGISTER_200_DESCRIPTION),
+            400: OpenApiResponse(response=RegisterBadRequestSerializer),
+            403: OpenApiResponse(response=IpBlockedErrorSerializer, description=IP_BLOCKED_DESCRIPTION),
+            429: OpenApiResponse(response=AuthFieldNotAllowedToReceiveSmsErrorSerializer)
+        },
+        tags=SCHEMA_TAGS)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
