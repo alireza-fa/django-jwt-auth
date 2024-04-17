@@ -36,7 +36,7 @@ class UserLoginByPasswordView(APIView):
             try:
                 token = login_by_password(request=request, username=serializer.validated_data["username"],
                                           password=serializer.validated_data["password"])
-            except ValueError:
+            except User.DoesNotExist:
                 return base_response_with_error(status_code=status.HTTP_404_NOT_FOUND,
                                                 code=response_code.USER_NOT_FOUND)
 

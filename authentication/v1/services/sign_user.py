@@ -19,7 +19,7 @@ def login_by_password(request: HttpRequest, username: str, password: str) -> Dic
     user = get_user_by_username(username=username)
 
     if not user.check_password(password):
-        raise ValueError("user does not exist")
+        raise User.DoesNotExist
 
     client_info = client.get_client_info(request=request)
 

@@ -1,6 +1,17 @@
 from typing import Dict
 
-from rest_framework_simplejwt.tokens import RefreshToken, AccessToken, Token, UntypedToken, TokenError
+from rest_framework_simplejwt.tokens import Token, UntypedToken, TokenError
+from pkg.token.app_settings import app_setting
+
+
+class AccessToken(Token):
+    lifetime = app_setting.access_token_lifetime_minutes
+    token_type = "access_token"
+
+
+class RefreshToken(Token):
+    lifetime = app_setting.refresh_token_lifetime_days
+    token_type = "refresh_token"
 
 
 def set_token_claims(*, token: Token, claims: Dict):

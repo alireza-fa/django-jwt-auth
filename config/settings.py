@@ -163,10 +163,4 @@ SPECTACULAR_SETTINGS = {
 AUTH_USER_MODEL = 'accounts.BaseUser'
 
 
-# JWT Config
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=31),
-}
-
 ENCRYPT_KEY = b'\xcaN\x9cO\xf4B\xe8\xb2+\xea\xdbh--6\xd7\xf5u\x18\x9f\x0c\xa5\xf0\xe9\xd6\x8aQ\xe2\xafp\xf8\xff'
