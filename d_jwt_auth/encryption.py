@@ -1,5 +1,5 @@
 import base64
-from typing import ByteString
+from typing import ByteString, Any
 
 from Crypto.Cipher import AES
 from Crypto.Cipher._mode_ecb import EcbMode
