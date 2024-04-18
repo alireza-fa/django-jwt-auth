@@ -39,8 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Local apps
-    'authentication.apps.AuthenticationConfig',
-    'accounts.apps.AccountsConfig',
+    # 'authentication.apps.AuthenticationConfig',
+    'pkg.jwt_auth.apps.JwtAuthConfig',
     'api.apps.ApiConfig',
     # Third party apps
     'drf_spectacular',
@@ -136,7 +136,7 @@ REST_FRAMEWORK = {
     # YOUR SETTINGS
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'authentication.authenticate.CustomAuthentication',
+        'pkg.jwt_auth.authenticate.JWTAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
@@ -160,7 +160,37 @@ SPECTACULAR_SETTINGS = {
 }
 
 
-AUTH_USER_MODEL = 'accounts.BaseUser'
+# JWT AUTH
+IP_ADDRESS = "ip_address"
+DEVICE_NAME = "device_name"
+USER_ID = "id"
+USERNAME = "username"
+EMAIL = "email"
+IS_ACTIVE = "is_active"
+IS_ADMIN = "is_admin"
 
+JWT_AUTH_REFRESH_TOKEN_CLAIMS = {
+    IP_ADDRESS: "",
+    DEVICE_NAME: "",
+    USER_ID: 0,
+}
 
-ENCRYPT_KEY = b'\xcaN\x9cO\xf4B\xe8\xb2+\xea\xdbh--6\xd7\xf5u\x18\x9f\x0c\xa5\xf0\xe9\xd6\x8aQ\xe2\xafp\xf8\xff'
+JWT_AUTH_ACCESS_TOKEN_CLAIMS = {
+    IP_ADDRESS: "",
+    DEVICE_NAME: "",
+    USER_ID: 0,
+    USERNAME: "",
+    EMAIL: "",
+    IS_ACTIVE: False,
+    IS_ADMIN: False,
+}
+
+JWT_AUTH_ACCESS_TOKEN_USER_FIELD_CLAIMS = {
+    USER_ID: 0,
+    USERNAME: "",
+    EMAIL: "",
+    IS_ACTIVE: False,
+    IS_ADMIN: False,
+}
+
+JWT_AUTH_ENCRYPT_KEY = b'\xcaN\x9cO\xf4B\xe8\xb2+\xea\xdbh--6\xd7\xf5u\x18\x9f\x0c\xa5\xf0\xe9\xd6\x8aQ\xe2\xafp\xf8\xff'
