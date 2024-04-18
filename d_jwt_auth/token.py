@@ -8,8 +8,9 @@ from django.contrib.auth import get_user_model
 
 from .app_settings import app_setting
 from .encrypto.encryption import encrypt, decrypt
-from .exceptions import CheckClaimsErr, TokenError
+from .exceptions import TokenError
 from .client import get_client_info, IP_ADDRESS, DEVICE_NAME
+from .services import get_user_auth_uuid
 
 User = get_user_model()
 
@@ -128,7 +129,7 @@ def validate_token(request: HttpRequest, string_token: str) -> Token:
 def refresh_access_token(check_claims: dict, request: HttpRequest, refresh_token: str) -> str:
     refresh_token_str = decrypt_token(token=refresh_token)
 
-    token = validate_token(string_token=refresh_token_str)
+    token = validate_token(request=request, string_token=refresh_token_str)
 
     client_info = get_client_info(request=request)
     if token[DEVICE_NAME] != client_info[DEVICE_NAME]:
@@ -138,16 +139,8 @@ def refresh_access_token(check_claims: dict, request: HttpRequest, refresh_token
 
     for key, value in check_claims.items():
         if check_claims[key] == token[key]:
-            raise CheckClaimsErr(f"{key} value not match with token value: token: {token[key]} != {value}")
+            raise TokenError(f"{key} value not match with token value: token: {token[key]} != {value}")
 
     user.update(last_login=now())
 
     return generate_access_token_with_claims(encrypt_func=encrypt_token, **user.__dict__)
-
-
-def ban_token(encrypted_token: str) -> None:
-    decrypted_token = decrypt_token(token=encrypted_token)
-
-    # token = validate_token(string_token=decrypted_token, func=validate_refresh_token)
-    #
-    # set_cache(key=str(token), value=1, timeout=settings.REFRESH_TOKEN_TOKEN_LIFETIME_TO_DAYS*24*60*60)

@@ -1,11 +1,7 @@
 import uuid
 
-from django.contrib.auth import get_user_model
-
 from .models import UserAuth
 from .cache import get_cache, set_cache
-
-User = get_user_model()
 
 
 ACCESS_UUID_CACHE_KEY = "user:access:uuid:{user_id}"
@@ -17,8 +13,8 @@ TOKEN_TYPE_KEY = {
 }
 
 
-def create_user_auth(user: User, token_type: int, uuid_filed: uuid.UUID | None = None) -> UserAuth:
-    user_auth = UserAuth(user=user, token_type=token_type)
+def create_user_auth(user_id: int, token_type: int, uuid_filed: uuid.UUID | None = None) -> UserAuth:
+    user_auth = UserAuth(user_id=user_id, token_type=token_type)
     if uuid_filed:
         user_auth.uuid = uuid_filed
     else:
@@ -27,30 +23,30 @@ def create_user_auth(user: User, token_type: int, uuid_filed: uuid.UUID | None =
     return user_auth
 
 
-def get_user_auth_uuid(user: User, token_type: int) -> uuid.UUID:
-    access_uuid = get_cache(TOKEN_TYPE_KEY[token_type].format(user_id=user.id))
+def get_user_auth_uuid(user_id: int, token_type: int) -> uuid.UUID:
+    access_uuid = get_cache(TOKEN_TYPE_KEY[token_type].format(user_id=user_id))
     if access_uuid:
         return access_uuid
 
-    user_auths = UserAuth.objects.filter(user=user, token_type=token_type)
+    user_auths = UserAuth.objects.filter(user_id=user_id, token_type=token_type)
     if user_auths.exists():
         user_auth = user_auths.first()
     else:
-        user_auth = create_user_auth(user=user, token_type=token_type)
+        user_auth = create_user_auth(user_id=user_id, token_type=token_type)
 
-    set_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user.id), value=user_auth.uuid, timeout=60*60*24*30)
+    set_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id), value=user_auth.uuid, timeout=60*60*24*30)
 
     return user_auth.uuid
 
 
-def update_user_auth_uuid(user: User, token_type: int) -> uuid.UUID:
-    user_auths = UserAuth.objects.filter(user=user, token_type=token_type)
+def update_user_auth_uuid(user_id: int, token_type: int) -> uuid.UUID:
+    user_auths = UserAuth.objects.filter(user_id=user_id, token_type=token_type)
     if user_auths.exists():
         user_auth = user_auths.first()
         user_auth.uuid = uuid.uuid4()
     else:
-        user_auth = create_user_auth(user=user, token_type=token_type)
+        user_auth = create_user_auth(user_id=user_id, token_type=token_type)
 
-    set_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user.id), value=user_auth.uuid, timeout=60*60*24*30)
+    set_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id), value=user_auth.uuid, timeout=60*60*24*30)
 
     return user_auth.uuid

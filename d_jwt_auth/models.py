@@ -5,12 +5,6 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-class UserAuthManager(models.Manager):
-
-    def get_queryset(self):
-        return super().get_queryset().select_related("user")
-
-
 class UserAuth(models.Model):
     ACCESS_TOKEN = 1
     REFRESH_TOKEN = 2
@@ -19,11 +13,9 @@ class UserAuth(models.Model):
         (ACCESS_TOKEN, "access token"),
         (REFRESH_TOKEN, "refresh token")
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_auths")
+    user_id = models.IntegerField(verbose_name=_("user id"), db_index=True)
     token_type = models.PositiveSmallIntegerField(choices=TOKEN_TYPE_CHOICES, verbose_name=_("token type"))
     uuid = models.UUIDField(verbose_name=_("uuid"), unique=True, db_index=True)
-
-    objects = UserAuthManager()
 
     class Meta:
         verbose_name = _("UserAuth")
@@ -31,4 +23,4 @@ class UserAuth(models.Model):
         ordering = ("-id",)
 
     def __str__(self):
-        return f"{self.user} - token type(a = 1, r = 2): {self.token_type} - {self.uuid}"
+        return f"user id: {self.user_id} - token type(a = 1, r = 2): {self.token_type} - {self.uuid}"
