@@ -1,0 +1,108 @@
+import uuid
+
+from django.test import TestCase
+from django.contrib.auth import get_user_model
+
+from ..services import create_user_auth, get_user_auth_uuid, ACCESS_UUID_CACHE_KEY, \
+    REFRESH_UUID_CACHE_KEY, update_user_auth_uuid
+from ..models import UserAuth
+from ..cache import get_cache, clear_all_cache
+
+User = get_user_model()
+
+
+class TestServices(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="alireza",
+            password="password",
+            email="alirezafeyze44@gmail.com")
+
+    def test_user_auth_cache_key(self):
+        access_key = ACCESS_UUID_CACHE_KEY.format(user_id=1)
+        self.assertEqual("user:access:uuid:1", access_key)
+        refresh_key = REFRESH_UUID_CACHE_KEY.format(user_id=1)
+        self.assertEqual("user:refresh:uuid:1", refresh_key)
+
+    def test_create_user_auth(self):
+        create_user_auth(user=self.user, token_type=UserAuth.ACCESS_TOKEN)
+        self.assertEqual(UserAuth.objects.count(), 1)
+
+    def test_create_user_auth_for_many_users(self):
+        for i in range(10):
+            user = User.objects.create_user(
+                username="user%d" % i,
+                password="password",
+                email="email%d@gmail.com" % i)
+            create_user_auth(user=user, token_type=UserAuth.ACCESS_TOKEN)
+            create_user_auth(user=user, token_type=UserAuth.REFRESH_TOKEN)
+        self.assertEqual(UserAuth.objects.count(), 20)
+
+    def test_create_user_auth_user(self):
+        create_user_auth(user=self.user, token_type=UserAuth.ACCESS_TOKEN)
+        self.assertEqual(UserAuth.objects.first().user, self.user)
+
+    def test_create_user_Auth_token_type(self):
+        create_user_auth(user=self.user, token_type=UserAuth.ACCESS_TOKEN)
+        self.assertEqual(UserAuth.objects.first().token_type, UserAuth.ACCESS_TOKEN)
+        create_user_auth(user=self.user, token_type=UserAuth.REFRESH_TOKEN)
+        self.assertEqual(UserAuth.objects.first().token_type, UserAuth.REFRESH_TOKEN)
+
+    def test_create_user_auth_without_uuid(self):
+        create_user_auth(user=self.user, token_type=UserAuth.ACCESS_TOKEN)
+        self.assertEqual(type(UserAuth.objects.first().uuid), uuid.UUID)
+        self.assertIsNotNone(UserAuth.objects.first().uuid)
+
+    def test_create_user_auth_with_uuid(self):
+        uuid_field = uuid.uuid4()
+        create_user_auth(user=self.user, token_type=UserAuth.ACCESS_TOKEN, uuid_filed=uuid_field)
+        self.assertEqual(UserAuth.objects.first().uuid, uuid_field)
+
+    def test_get_user_auth_uuid(self):
+        clear_all_cache()
+        access_uuid = get_user_auth_uuid(user=self.user, token_type=UserAuth.ACCESS_TOKEN)
+        self.assertEqual(UserAuth.objects.count(), 1)
+        self.assertEqual(UserAuth.objects.first().uuid, access_uuid)
+
+    def test_get_user_auth_uuid_cache_info_with_access_key(self):
+        clear_all_cache()
+        access_uuid = get_user_auth_uuid(user=self.user, token_type=UserAuth.ACCESS_TOKEN)
+        cache_uuid = get_cache(key=ACCESS_UUID_CACHE_KEY.format(user_id=self.user.id))
+        self.assertIsNotNone(cache_uuid)
+        self.assertEqual(access_uuid, cache_uuid)
+
+    def test_get_user_auth_uuid_cache_info_with_refresh_key(self):
+        clear_all_cache()
+        refresh_uuid = get_user_auth_uuid(user=self.user, token_type=UserAuth.REFRESH_TOKEN)
+        cache_uuid = get_cache(key=REFRESH_UUID_CACHE_KEY.format(user_id=self.user.id))
+        self.assertIsNotNone(cache_uuid)
+        self.assertEqual(refresh_uuid, cache_uuid)
+
+    def test_get_user_auth_uuid_only_create_once(self):
+        clear_all_cache()
+        for i in range(10):
+            get_user_auth_uuid(user=self.user, token_type=UserAuth.ACCESS_TOKEN)
+            get_user_auth_uuid(user=self.user, token_type=UserAuth.REFRESH_TOKEN)
+
+        self.assertEqual(UserAuth.objects.count(), 2)
+        self.assertEqual(UserAuth.objects.filter(token_type=UserAuth.ACCESS_TOKEN).count(), 1)
+        self.assertEqual(UserAuth.objects.filter(token_type=UserAuth.REFRESH_TOKEN).count(), 1)
+
+    def test_update_user_auth_uuid_create_new_user_auth(self):
+        update_user_auth_uuid(user=self.user, token_type=UserAuth.ACCESS_TOKEN)
+        self.assertEqual(UserAuth.objects.count(), 1)
+
+    def test_update_user_auth_uuid_create_once(self):
+        for i in range(10):
+            update_user_auth_uuid(user=self.user, token_type=UserAuth.REFRESH_TOKEN)
+            update_user_auth_uuid(user=self.user, token_type=UserAuth.ACCESS_TOKEN)
+
+        self.assertEqual(UserAuth.objects.count(), 2)
+        self.assertEqual(UserAuth.objects.filter(user=self.user, token_type=UserAuth.ACCESS_TOKEN).count(), 1)
+
+    def test_update_user_auth_exist_user_auth(self):
+        uuid_field = get_user_auth_uuid(self.user, token_type=UserAuth.ACCESS_TOKEN)
+        new_uuid_field = update_user_auth_uuid(user=self.user, token_type=UserAuth.ACCESS_TOKEN)
+        self.assertNotEquals(uuid_field, new_uuid_field)
+        self.assertEqual(UserAuth.objects.first().uuid, new_uuid_field)
