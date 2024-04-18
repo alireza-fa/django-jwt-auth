@@ -11,6 +11,7 @@ from .encrypto.encryption import encrypt, decrypt
 from .exceptions import TokenError
 from .client import get_client_info, IP_ADDRESS, DEVICE_NAME
 from .services import get_user_auth_uuid
+from .models import UserAuth
 
 User = get_user_model()
 
@@ -18,6 +19,8 @@ User = get_user_model()
 ACCESS_TOKEN = "access_token"
 REFRESH_TOKEN = "refresh_token"
 TOKEN_TYPE = "token_type"
+USER_ID = "id"
+UUID_FIELD = "uuid_field"
 
 
 class AccessToken(Token):
@@ -51,6 +54,7 @@ def get_token_string_claims(*, token: Token, claims: Dict):
 def generate_refresh_token_with_claims(**kwargs) -> str:
     refresh_token = RefreshToken()
 
+    kwargs[UUID_FIELD] = get_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.REFRESH_TOKEN)
     set_token_claims(token=refresh_token, claims=app_setting.refresh_token_claims, **kwargs)
 
     refresh_token = encrypt_token(refresh_token)
@@ -61,6 +65,7 @@ def generate_refresh_token_with_claims(**kwargs) -> str:
 def generate_access_token_with_claims(**kwargs) -> str:
     access_token = AccessToken()
 
+    kwargs[UUID_FIELD] = get_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.ACCESS_TOKEN)
     set_token_claims(token=access_token, claims=app_setting.access_token_claims, **kwargs)
 
     access_token = encrypt_token(access_token)
@@ -103,10 +108,16 @@ def generate_token(request: HttpRequest, user: User) -> Dict:
 def validate_refresh_token(token: Token, client_info: Dict) -> None:
     if client_info[DEVICE_NAME] != token[DEVICE_NAME]:
         raise TokenError("invalid token")
+    uuid_field = get_user_auth_uuid(user_id=token[USER_ID], token_type=UserAuth.REFRESH_TOKEN)
+    if uuid_field != token[UUID_FIELD]:
+        raise TokenError("invalid token")
 
 
 def validate_access_token(token: Token, client_info: Dict) -> None:
     if client_info[DEVICE_NAME] != token[DEVICE_NAME] or client_info[IP_ADDRESS] != token[IP_ADDRESS]:
+        raise TokenError("invalid token")
+    uuid_field = get_user_auth_uuid(user_id=token[USER_ID], token_type=UserAuth.ACCESS_TOKEN)
+    if uuid_field != token[UUID_FIELD]:
         raise TokenError("invalid token")
 
 

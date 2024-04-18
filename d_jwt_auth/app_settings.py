@@ -27,6 +27,7 @@ class AppSettings:
         return {
             **self._setting("REFRESH_TOKEN_CLAIMS", {"id": 0}),
             "id": 0,
+            "uuid_field": "",
             IP_ADDRESS: "",
             DEVICE_NAME: "",
         }
@@ -36,6 +37,7 @@ class AppSettings:
         return {
             **self._setting("ACCESS_TOKEN_CLAIMS", {"id": 0}),
             "id": 0,
+            "uuid_field": "",
             IP_ADDRESS: "",
             DEVICE_NAME: "",
         }
