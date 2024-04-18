@@ -7,29 +7,23 @@ from django.utils.timezone import now
 from django.contrib.auth import get_user_model
 
 from .app_settings import app_setting
+from .constants import ACCESS_TOKEN, REFRESH_TOKEN, UUID_FIELD, USER_ID, TOKEN_TYPE, DEVICE_NAME, IP_ADDRESS
 from .encrypto.encryption import encrypt, decrypt
 from .exceptions import TokenError
-from .client import get_client_info, IP_ADDRESS, DEVICE_NAME
+from .client import get_client_info
 from .services import get_user_auth_uuid
 from .models import UserAuth
 
 User = get_user_model()
 
 
-ACCESS_TOKEN = "access_token"
-REFRESH_TOKEN = "refresh_token"
-TOKEN_TYPE = "token_type"
-USER_ID = "id"
-UUID_FIELD = "uuid_field"
-
-
 class AccessToken(Token):
-    lifetime = app_setting.access_token_lifetime_minutes
+    lifetime = app_setting.access_token_lifetime
     token_type = ACCESS_TOKEN
 
 
 class RefreshToken(Token):
-    lifetime = app_setting.refresh_token_lifetime_days
+    lifetime = app_setting.refresh_token_lifetime
     token_type = REFRESH_TOKEN
 
 

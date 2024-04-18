@@ -3,6 +3,7 @@ from datetime import timedelta
 from Crypto.Random import get_random_bytes
 
 from .client import IP_ADDRESS, DEVICE_NAME
+from .constants import USER_ID, UUID_FIELD
 
 
 class AppSettings:
@@ -15,19 +16,19 @@ class AppSettings:
         return getattr(settings, self.prefix + name, default)
 
     @property
-    def access_token_lifetime_minutes(self):
-        return self._setting("ACCESS_TOKEN_LIFETIME_MINUTES", timedelta(minutes=10))
+    def access_token_lifetime(self):
+        return self._setting("ACCESS_TOKEN_LIFETIME", timedelta(minutes=10))
 
     @property
-    def refresh_token_lifetime_days(self):
-        return self._setting("REFRESH_TOKEN_LIFETIME_DAYS", timedelta(days=30))
+    def refresh_token_lifetime(self):
+        return self._setting("REFRESH_TOKEN_LIFETIME", timedelta(days=30))
 
     @property
     def refresh_token_claims(self):
         return {
             **self._setting("REFRESH_TOKEN_CLAIMS", {"id": 0}),
-            "id": 0,
-            "uuid_field": "",
+            USER_ID: 0,
+            UUID_FIELD: "",
             IP_ADDRESS: "",
             DEVICE_NAME: "",
         }
@@ -36,15 +37,18 @@ class AppSettings:
     def access_token_claims(self):
         return {
             **self._setting("ACCESS_TOKEN_CLAIMS", {"id": 0}),
-            "id": 0,
-            "uuid_field": "",
+            USER_ID: 0,
+            UUID_FIELD: "",
             IP_ADDRESS: "",
             DEVICE_NAME: "",
         }
 
     @property
     def access_token_user_field_claims(self):
-        return self._setting("ACCESS_TOKEN_USER_FIELD_CLAIMS", {"id": 0})
+        return {
+            **self._setting("ACCESS_TOKEN_USER_FIELD_CLAIMS", {"id": 0}),
+            USER_ID: 0,
+        }
 
     @property
     def encrypt_key(self):

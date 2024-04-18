@@ -3,8 +3,7 @@ from typing import Dict
 
 from django.http import HttpRequest
 
-IP_ADDRESS = "ip_address"
-DEVICE_NAME = "device_name"
+from .constants import IP_ADDRESS, DEVICE_NAME
 
 
 def get_ip_address(request: HttpRequest) -> str:

@@ -1,0 +1,7 @@
+ACCESS_TOKEN = "access_token"
+REFRESH_TOKEN = "refresh_token"
+TOKEN_TYPE = "token_type"
+USER_ID = "id"
+UUID_FIELD = "uuid_field"
+IP_ADDRESS = "ip_address"
+DEVICE_NAME = "device_name"
