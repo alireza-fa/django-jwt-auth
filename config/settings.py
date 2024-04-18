@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Local apps
     # 'authentication.apps.AuthenticationConfig',
-    'pkg.jwt_auth.apps.JwtAuthConfig',
+    'd_jwt_auth.apps.DJwtAuthConfig',
     'api.apps.ApiConfig',
     # Third party apps
     'drf_spectacular',
@@ -136,7 +136,7 @@ REST_FRAMEWORK = {
     # YOUR SETTINGS
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'pkg.jwt_auth.authenticate.JWTAuthentication',
+        'd_jwt_auth.authenticate.JWTAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
@@ -170,14 +170,10 @@ IS_ACTIVE = "is_active"
 IS_ADMIN = "is_admin"
 
 JWT_AUTH_REFRESH_TOKEN_CLAIMS = {
-    IP_ADDRESS: "",
-    DEVICE_NAME: "",
     USER_ID: 0,
 }
 
 JWT_AUTH_ACCESS_TOKEN_CLAIMS = {
-    IP_ADDRESS: "",
-    DEVICE_NAME: "",
     USER_ID: 0,
     USERNAME: "",
     EMAIL: "",

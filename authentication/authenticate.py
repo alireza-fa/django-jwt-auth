@@ -6,7 +6,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication, AuthUser
 from rest_framework_simplejwt.tokens import Token
 from rest_framework_simplejwt.exceptions import InvalidToken
 
-from pkg.jwt_auth.encrypto.encryption import decrypt
+from d_jwt_auth.encrypto import decrypt
 from authentication.v1.services.token import get_user_by_access_token
 
 User = get_user_model()
