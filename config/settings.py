@@ -77,10 +77,20 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'database',
+        'USER': 'user',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -197,5 +207,3 @@ JWT_AUTH_ACCESS_TOKEN_USER_FIELD_CLAIMS = {
 JWT_AUTH_CACHE_USING = True
 
 JWT_AUTH_GET_USER_BY_ACCESS_TOKEN = True
-
-JWT_AUTH_ENCRYPT_KEY = b'\xcaN\x9cO\xf4B\xe8\xb2+\xea\xdbh--6\xd7\xf5u\x18\x9f\x0c\xa5\xf0\xe9\xd6\x8aQ\xe2\xafp\xf8\xff'

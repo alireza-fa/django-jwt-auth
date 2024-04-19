@@ -8,8 +8,9 @@ from .constants import USER_ID, UUID_FIELD
 
 class AppSettings:
 
-    def __init__(self, prefix: str) -> None:
+    def __init__(self, prefix: str, encryption_key: bytes) -> None:
         self.prefix = prefix
+        self.encryption_key = encryption_key
 
     def _setting(self, name: str, default: object):
         from django.conf import settings
@@ -52,7 +53,7 @@ class AppSettings:
 
     @property
     def encrypt_key(self):
-        return self._setting("ENCRYPT_KEY", get_random_bytes(32))
+        return self._setting("ENCRYPT_KEY", self.encryption_key)
 
     @property
     def cache_using(self):
@@ -65,7 +66,7 @@ class AppSettings:
 
 @functools.lru_cache
 def jwt_auth_app_settings() -> AppSettings:
-    return AppSettings("JWT_AUTH_")
+    return AppSettings("JWT_AUTH_", get_random_bytes(32))
 
 
 app_setting = jwt_auth_app_settings()
