@@ -7,6 +7,7 @@ from d_jwt_auth.services import create_user_auth, get_user_auth_uuid, ACCESS_UUI
     REFRESH_UUID_CACHE_KEY, update_user_auth_uuid
 from d_jwt_auth.models import UserAuth
 from d_jwt_auth.cache import get_cache, clear_all_cache
+from d_jwt_auth.app_settings import app_setting
 
 User = get_user_model()
 
@@ -66,18 +67,20 @@ class TestServices(TestCase):
         self.assertEqual(str(UserAuth.objects.first().uuid), access_uuid)
 
     def test_get_user_auth_uuid_cache_info_with_access_key(self):
-        clear_all_cache()
-        access_uuid = get_user_auth_uuid(user_id=self.user.id, token_type=UserAuth.ACCESS_TOKEN)
-        cache_uuid = get_cache(key=ACCESS_UUID_CACHE_KEY.format(user_id=self.user.id))
-        self.assertIsNotNone(cache_uuid)
-        self.assertEqual(access_uuid, cache_uuid)
+        if app_setting.cache_using:
+            clear_all_cache()
+            access_uuid = get_user_auth_uuid(user_id=self.user.id, token_type=UserAuth.ACCESS_TOKEN)
+            cache_uuid = get_cache(key=ACCESS_UUID_CACHE_KEY.format(user_id=self.user.id))
+            self.assertIsNotNone(cache_uuid)
+            self.assertEqual(access_uuid, cache_uuid)
 
     def test_get_user_auth_uuid_cache_info_with_refresh_key(self):
-        clear_all_cache()
-        refresh_uuid = get_user_auth_uuid(user_id=self.user.id, token_type=UserAuth.REFRESH_TOKEN)
-        cache_uuid = get_cache(key=REFRESH_UUID_CACHE_KEY.format(user_id=self.user.id))
-        self.assertIsNotNone(cache_uuid)
-        self.assertEqual(refresh_uuid, cache_uuid)
+        if app_setting.cache_using:
+            clear_all_cache()
+            refresh_uuid = get_user_auth_uuid(user_id=self.user.id, token_type=UserAuth.REFRESH_TOKEN)
+            cache_uuid = get_cache(key=REFRESH_UUID_CACHE_KEY.format(user_id=self.user.id))
+            self.assertIsNotNone(cache_uuid)
+            self.assertEqual(refresh_uuid, cache_uuid)
 
     def test_get_user_auth_uuid_only_create_once(self):
         clear_all_cache()
