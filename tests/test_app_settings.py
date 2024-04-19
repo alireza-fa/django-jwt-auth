@@ -2,8 +2,8 @@ from datetime import timedelta
 
 from django.test import SimpleTestCase, override_settings
 
-from ..app_settings import app_setting
-from ..constants import USER_ID, UUID_FIELD, IP_ADDRESS, DEVICE_NAME
+from d_jwt_auth.app_settings import app_setting
+from d_jwt_auth.constants import USER_ID, UUID_FIELD, IP_ADDRESS, DEVICE_NAME
 
 
 class TestAppSettngs(SimpleTestCase):

@@ -1,6 +1,6 @@
 from django.test import SimpleTestCase, RequestFactory
 
-from .. import client
+from d_jwt_auth import client
 
 
 class TestClient(SimpleTestCase):

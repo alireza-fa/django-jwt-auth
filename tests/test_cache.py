@@ -1,7 +1,7 @@
 import time
 
 from django.test import SimpleTestCase
-from ..cache import get_cache, set_cache, delete_cache, clear_all_cache, incr_cache
+from d_jwt_auth.cache import get_cache, set_cache, delete_cache, clear_all_cache, incr_cache
 
 
 class TestSimple(SimpleTestCase):

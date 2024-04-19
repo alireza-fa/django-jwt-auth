@@ -3,7 +3,7 @@ import uuid
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
-from ..models import UserAuth
+from d_jwt_auth.models import UserAuth
 
 User = get_user_model()
 

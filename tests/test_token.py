@@ -4,14 +4,14 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory
 from model_bakery import baker
 
-from ..token import AccessToken, RefreshToken, set_token_claims, get_token_claims, generate_refresh_token_with_claims, \
+from d_jwt_auth.token import AccessToken, RefreshToken, set_token_claims, get_token_claims, generate_refresh_token_with_claims, \
     generate_access_token_with_claims, encrypt_token, decrypt_token, validate_refresh_token, validate_access_token, \
     validate_token, get_user_by_access_token, generate_token, refresh_access_token
-from ..constants import ACCESS_TOKEN, REFRESH_TOKEN, USER_ID, IP_ADDRESS, DEVICE_NAME, UUID_FIELD
-from ..app_settings import app_setting
-from ..services import get_user_auth_uuid, update_user_auth_uuid
-from ..models import UserAuth
-from ..exceptions import TokenError
+from d_jwt_auth.constants import ACCESS_TOKEN, REFRESH_TOKEN, USER_ID, IP_ADDRESS, DEVICE_NAME, UUID_FIELD
+from d_jwt_auth.app_settings import app_setting
+from d_jwt_auth.services import get_user_auth_uuid, update_user_auth_uuid
+from d_jwt_auth.models import UserAuth
+from d_jwt_auth.exceptions import TokenError
 
 User = get_user_model()
 

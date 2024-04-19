@@ -2,8 +2,8 @@ from ast import literal_eval
 from Crypto.Cipher._mode_ecb import EcbMode
 from django.test import SimpleTestCase
 
-from ..encryption import get_new_cipher, encrypt, decrypt
-from ..app_settings import app_setting
+from d_jwt_auth.encryption import get_new_cipher, encrypt, decrypt
+from d_jwt_auth.app_settings import app_setting
 
 
 class TestEncryption(SimpleTestCase):
