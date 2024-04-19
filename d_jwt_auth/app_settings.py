@@ -56,11 +56,11 @@ class AppSettings:
 
     @property
     def cache_using(self):
-        return self._setting("CACHE_USING", True)
+        return self._setting("CACHE_USING", False)
 
     @property
     def get_user_by_access_token(self):
-        return self._setting("GET_USER_BY_ACCESS_TOKEN", True)
+        return self._setting("GET_USER_BY_ACCESS_TOKEN", False)
 
 
 @functools.lru_cache
