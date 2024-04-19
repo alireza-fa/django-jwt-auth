@@ -73,11 +73,19 @@ def get_user_by_access_token(token: Token) -> User:
 
 
 def encrypt_token(token: Token) -> str:
-    return encrypt(data=str(token), key=app_setting.encrypt_key)
+    try:
+        encrypted_token = encrypt(data=str(token), key=app_setting.encrypt_key)
+    except ValueError as err:
+        raise TokenError(err)
+    return encrypted_token
 
 
 def decrypt_token(token: str) -> str:
-    return decrypt(encrypted=token.encode(), key=app_setting.encrypt_key)
+    try:
+        decrypted_token = decrypt(encrypted=token.encode(), key=app_setting.encrypt_key)
+    except ValueError as err:
+        raise TokenError(err)
+    return decrypted_token
 
 
 def generate_token(request: HttpRequest, user: User) -> Dict:

@@ -1,7 +1,8 @@
 import uuid
 
 from .models import UserAuth
-from .cache import get_cache, set_cache, delete_cache
+from .cache import get_cache, set_cache
+from .app_settings import app_setting
 
 
 ACCESS_UUID_CACHE_KEY = "user:access:uuid:{user_id}"
@@ -24,9 +25,10 @@ def create_user_auth(user_id: int, token_type: int, uuid_filed: uuid.UUID | None
 
 
 def get_user_auth_uuid(user_id: int, token_type: int) -> str:
-    access_uuid = get_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id))
-    if access_uuid:
-        return access_uuid
+    if app_setting.cache_using:
+        access_uuid = get_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id))
+        if access_uuid:
+            return access_uuid
 
     user_auths = UserAuth.objects.filter(user_id=user_id, token_type=token_type)
     if user_auths.exists():
@@ -34,7 +36,8 @@ def get_user_auth_uuid(user_id: int, token_type: int) -> str:
     else:
         user_auth = create_user_auth(user_id=user_id, token_type=token_type)
 
-    set_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id), value=str(user_auth.uuid), timeout=60*60*24*30)
+    if app_setting.cache_using:
+        set_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id), value=str(user_auth.uuid), timeout=60*60*24*30)
 
     return str(user_auth.uuid)
 
@@ -48,6 +51,7 @@ def update_user_auth_uuid(user_id: int, token_type: int) -> str:
     else:
         user_auth = create_user_auth(user_id=user_id, token_type=token_type)
 
-    set_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id), value=str(user_auth.uuid), timeout=60*60*24*30)
+    if app_setting.cache_using:
+        set_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id), value=str(user_auth.uuid), timeout=60*60*24*30)
 
     return str(user_auth.uuid)

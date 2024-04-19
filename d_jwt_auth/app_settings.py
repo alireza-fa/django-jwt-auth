@@ -54,6 +54,14 @@ class AppSettings:
     def encrypt_key(self):
         return self._setting("ENCRYPT_KEY", get_random_bytes(32))
 
+    @property
+    def cache_using(self):
+        return self._setting("CACHE_USING", True)
+
+    @property
+    def get_user_by_access_token(self):
+        return self._setting("GET_USER_BY_ACCESS_TOKEN", True)
+
 
 @functools.lru_cache
 def jwt_auth_app_settings() -> AppSettings:
