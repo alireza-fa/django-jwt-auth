@@ -144,3 +144,11 @@ def refresh_access_token(request: HttpRequest, raw_refresh_token: str) -> str:
     user.save()
 
     return generate_access_token_with_claims(**user.__dict__, **client_info)
+
+
+def verify_token(request: HttpRequest, raw_token: str) -> bool:
+    try:
+        validate_token(request=request, raw_token=raw_token)
+    except TokenError:
+        return False
+    return True

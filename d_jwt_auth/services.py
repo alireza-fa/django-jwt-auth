@@ -1,7 +1,7 @@
 import uuid
 
 from .models import UserAuth
-from .cache import get_cache, set_cache
+from .cache import get_cache, set_cache, delete_cache
 
 
 ACCESS_UUID_CACHE_KEY = "user:access:uuid:{user_id}"
@@ -24,7 +24,7 @@ def create_user_auth(user_id: int, token_type: int, uuid_filed: uuid.UUID | None
 
 
 def get_user_auth_uuid(user_id: int, token_type: int) -> str:
-    access_uuid = get_cache(TOKEN_TYPE_KEY[token_type].format(user_id=user_id))
+    access_uuid = get_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id))
     if access_uuid:
         return access_uuid
 
