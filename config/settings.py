@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,12 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Local apps
-    # 'authentication.apps.AuthenticationConfig',
     'd_jwt_auth.apps.DJwtAuthConfig',
-    'api.apps.ApiConfig',
     # Third party apps
     'drf_spectacular',
-
 ]
 
 MIDDLEWARE = [
