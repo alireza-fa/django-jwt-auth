@@ -63,7 +63,7 @@ class TestServices(TestCase):
         clear_all_cache()
         access_uuid = get_user_auth_uuid(user_id=self.user.id, token_type=UserAuth.ACCESS_TOKEN)
         self.assertEqual(UserAuth.objects.count(), 1)
-        self.assertEqual(UserAuth.objects.first().uuid, access_uuid)
+        self.assertEqual(str(UserAuth.objects.first().uuid), access_uuid)
 
     def test_get_user_auth_uuid_cache_info_with_access_key(self):
         clear_all_cache()
@@ -105,7 +105,7 @@ class TestServices(TestCase):
         uuid_field = get_user_auth_uuid(user_id=self.user.id, token_type=UserAuth.ACCESS_TOKEN)
         new_uuid_field = update_user_auth_uuid(user_id=self.user.id, token_type=UserAuth.ACCESS_TOKEN)
         self.assertNotEquals(uuid_field, new_uuid_field)
-        self.assertEqual(UserAuth.objects.first().uuid, new_uuid_field)
+        self.assertEqual(str(UserAuth.objects.first().uuid), new_uuid_field)
 
     def test_get_uuid_from_database_once(self):
         clear_all_cache()

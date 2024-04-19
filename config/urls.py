@@ -27,6 +27,6 @@ docs_urls = [
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("auth/", include("d_jwt_auth.urls")),
+    path("auth/", include("django_jwt_auth.urls")),
     path("", RedirectView.as_view(url="/api/schema/swagger/"))
 ] + docs_urls

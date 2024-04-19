@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Local apps
-    'd_jwt_auth.apps.DJwtAuthConfig',
+    'django_jwt_auth.apps.DjangoJwtAuth',
     # Third party apps
     'drf_spectacular',
 ]
@@ -132,7 +132,7 @@ REST_FRAMEWORK = {
     # YOUR SETTINGS
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'd_jwt_auth.authenticate.JWTAuthentication',
+        'django_jwt_auth.authenticate.JWTAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
