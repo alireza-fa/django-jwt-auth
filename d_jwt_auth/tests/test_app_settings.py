@@ -11,7 +11,6 @@ class TestAppSettngs(SimpleTestCase):
     def test_access_token_lifetime_default(self):
         lifetime = app_setting.access_token_lifetime
         self.assertIsNotNone(lifetime)
-        print(lifetime)
         self.assertEqual(type(lifetime), timedelta)
 
     @override_settings(JWT_AUTH_ACCESS_TOKEN_LIFETIME=timedelta(minutes=5))

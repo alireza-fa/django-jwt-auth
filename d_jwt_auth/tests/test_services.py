@@ -106,3 +106,10 @@ class TestServices(TestCase):
         new_uuid_field = update_user_auth_uuid(user_id=self.user.id, token_type=UserAuth.ACCESS_TOKEN)
         self.assertNotEquals(uuid_field, new_uuid_field)
         self.assertEqual(UserAuth.objects.first().uuid, new_uuid_field)
+
+    def test_get_uuid_from_database_once(self):
+        clear_all_cache()
+        get_user_auth_uuid(user_id=self.user.id, token_type=UserAuth.REFRESH_TOKEN)
+        UserAuth.objects.all().delete()
+        uuid_field_from_cache = get_user_auth_uuid(user_id=self.user.id, token_type=UserAuth.REFRESH_TOKEN)
+        self.assertIsNotNone(uuid_field_from_cache)

@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 
 from .app_settings import app_setting
 from .constants import ACCESS_TOKEN, REFRESH_TOKEN, UUID_FIELD, USER_ID, TOKEN_TYPE, DEVICE_NAME, IP_ADDRESS
-from .encrypto.encryption import encrypt, decrypt
+from d_jwt_auth.encryption import encrypt, decrypt
 from .exceptions import TokenError
 from .client import get_client_info
 from .services import get_user_auth_uuid
@@ -37,12 +37,7 @@ def set_token_claims(*, token: Token, claims: Dict, **kwargs):
 
 def get_token_claims(*, token: Token, claims: Dict):
     for key in claims:
-        claims[key] = token[key]
-
-
-def get_token_string_claims(*, token: Token, claims: Dict):
-    for key in claims:
-        claims[key] = token[key]
+        claims[key] = token.get(key)
 
 
 def generate_refresh_token_with_claims(**kwargs) -> str:
@@ -87,15 +82,16 @@ def decrypt_token(token: str) -> str:
 
 def generate_token(request: HttpRequest, user: User) -> Dict:
     client_info = get_client_info(request=request)
-    refresh_token = generate_refresh_token_with_claims(encrypt_func=encrypt_token, **client_info, **user.__dict__)
+    refresh_token = generate_refresh_token_with_claims(**client_info, **user.__dict__)
 
-    access_token = generate_access_token_with_claims(encrypt_func=encrypt_token, **client_info, **user.__dict__)
+    access_token = generate_access_token_with_claims(**client_info, **user.__dict__)
 
-    user.update(last_login=now())
+    user.last_login = now()
+    user.save()
 
     return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
+        ACCESS_TOKEN: access_token,
+        REFRESH_TOKEN: refresh_token,
     }
 
 
@@ -104,7 +100,7 @@ def validate_refresh_token(token: Token, client_info: Dict) -> None:
         raise TokenError("invalid token")
     uuid_field = get_user_auth_uuid(user_id=token[USER_ID], token_type=UserAuth.REFRESH_TOKEN)
     if uuid_field != token[UUID_FIELD]:
-        raise TokenError("invalid token")
+        raise TokenError("invalid uuid")
 
 
 def validate_access_token(token: Token, client_info: Dict) -> None:
@@ -115,7 +111,8 @@ def validate_access_token(token: Token, client_info: Dict) -> None:
         raise TokenError("invalid token")
 
 
-def validate_token(request: HttpRequest, string_token: str) -> Token:
+def validate_token(request: HttpRequest, raw_token: str) -> Token:
+    string_token = decrypt_token(token=raw_token)
     try:
         token = UntypedToken(token=string_token)
     except BaseTokenError as err:
@@ -131,21 +128,19 @@ def validate_token(request: HttpRequest, string_token: str) -> Token:
     return token
 
 
-def refresh_access_token(check_claims: dict, request: HttpRequest, refresh_token: str) -> str:
-    refresh_token_str = decrypt_token(token=refresh_token)
-
-    token = validate_token(request=request, string_token=refresh_token_str)
+def refresh_access_token(request: HttpRequest, raw_refresh_token: str) -> str:
+    token = validate_token(request=request, raw_token=raw_refresh_token)
 
     client_info = get_client_info(request=request)
-    if token[DEVICE_NAME] != client_info[DEVICE_NAME]:
-        raise TokenError
 
-    user = User.objects.get(id=token["id"])
+    validate_refresh_token(token=token, client_info=client_info)
 
-    for key, value in check_claims.items():
-        if check_claims[key] == token[key]:
-            raise TokenError(f"{key} value not match with token value: token: {token[key]} != {value}")
+    try:
+        user = User.objects.get(id=token["id"])
+    except User.DoesNotExist as err:
+        raise TokenError(err)
 
-    user.update(last_login=now())
+    user.last_login = now()
+    user.save()
 
-    return generate_access_token_with_claims(encrypt_func=encrypt_token, **user.__dict__)
+    return generate_access_token_with_claims(**user.__dict__, **client_info)

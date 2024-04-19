@@ -23,7 +23,7 @@ def create_user_auth(user_id: int, token_type: int, uuid_filed: uuid.UUID | None
     return user_auth
 
 
-def get_user_auth_uuid(user_id: int, token_type: int) -> uuid.UUID:
+def get_user_auth_uuid(user_id: int, token_type: int) -> str:
     access_uuid = get_cache(TOKEN_TYPE_KEY[token_type].format(user_id=user_id))
     if access_uuid:
         return access_uuid
@@ -34,19 +34,20 @@ def get_user_auth_uuid(user_id: int, token_type: int) -> uuid.UUID:
     else:
         user_auth = create_user_auth(user_id=user_id, token_type=token_type)
 
-    set_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id), value=user_auth.uuid, timeout=60*60*24*30)
+    set_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id), value=str(user_auth.uuid), timeout=60*60*24*30)
 
-    return user_auth.uuid
+    return str(user_auth.uuid)
 
 
-def update_user_auth_uuid(user_id: int, token_type: int) -> uuid.UUID:
+def update_user_auth_uuid(user_id: int, token_type: int) -> str:
     user_auths = UserAuth.objects.filter(user_id=user_id, token_type=token_type)
     if user_auths.exists():
         user_auth = user_auths.first()
         user_auth.uuid = uuid.uuid4()
+        user_auth.save()
     else:
         user_auth = create_user_auth(user_id=user_id, token_type=token_type)
 
-    set_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id), value=user_auth.uuid, timeout=60*60*24*30)
+    set_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id), value=str(user_auth.uuid), timeout=60*60*24*30)
 
-    return user_auth.uuid
+    return str(user_auth.uuid)

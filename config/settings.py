@@ -167,7 +167,7 @@ USER_ID = "id"
 USERNAME = "username"
 EMAIL = "email"
 IS_ACTIVE = "is_active"
-IS_ADMIN = "is_admin"
+IS_STAFF = "is_staff"
 
 JWT_AUTH_REFRESH_TOKEN_CLAIMS = {
     USER_ID: 0,
@@ -178,7 +178,7 @@ JWT_AUTH_ACCESS_TOKEN_CLAIMS = {
     USERNAME: "",
     EMAIL: "",
     IS_ACTIVE: False,
-    IS_ADMIN: False,
+    IS_STAFF: False,
 }
 
 JWT_AUTH_ACCESS_TOKEN_USER_FIELD_CLAIMS = {
@@ -186,7 +186,7 @@ JWT_AUTH_ACCESS_TOKEN_USER_FIELD_CLAIMS = {
     USERNAME: "",
     EMAIL: "",
     IS_ACTIVE: False,
-    IS_ADMIN: False,
+    IS_STAFF: False,
 }
 
 JWT_AUTH_ENCRYPT_KEY = b'\xcaN\x9cO\xf4B\xe8\xb2+\xea\xdbh--6\xd7\xf5u\x18\x9f\x0c\xa5\xf0\xe9\xd6\x8aQ\xe2\xafp\xf8\xff'
