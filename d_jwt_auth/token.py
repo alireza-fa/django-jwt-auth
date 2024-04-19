@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 
 from .app_settings import app_setting
 from .constants import ACCESS_TOKEN, REFRESH_TOKEN, UUID_FIELD, USER_ID, TOKEN_TYPE, DEVICE_NAME, IP_ADDRESS
-from d_jwt_auth.encryption import encrypt, decrypt
+from .encryption import encrypt, decrypt
 from .exceptions import TokenError
 from .client import get_client_info
 from .services import get_user_auth_uuid
