@@ -22,9 +22,9 @@ class TestServices(TestCase):
 
     def test_user_auth_cache_key(self):
         access_key = ACCESS_UUID_CACHE_KEY.format(user_id=1)
-        self.assertEqual("user:access:uuid:1", access_key)
+        self.assertEqual("user:1:access:uuid", access_key)
         refresh_key = REFRESH_UUID_CACHE_KEY.format(user_id=1)
-        self.assertEqual("user:refresh:uuid:1", refresh_key)
+        self.assertEqual("user:1:refresh:uuid", refresh_key)
 
     def test_create_user_auth(self):
         create_user_auth(user_id=self.user.id, token_type=UserAuth.ACCESS_TOKEN)

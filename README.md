@@ -106,6 +106,84 @@ class RefreshTokenView(APIView):
 
 The `refresh_access_token` function takes the request object and the raw refresh token as arguments, and returns a new access token if the refresh token is valid. If there's an issue with the refresh token, it will raise a `TokenError` exception.
 
+# Invalidating Tokens
+
+To invalidate a token, use the `update_user_auth_uuid` function.
+
+When do we need to invalidate a token before its expiration date?
+1. When you create the user object using the access token. If the user information is updated, you should invalidate the user's access tokens.
+2. When a user logs out, you should invalidate their refresh_token and access_tokens.
+
+Let's consider an example:
+Suppose you change the user's role from admin to a regular user. This user is currently logged in on two devices, and the user's access token is still valid on both devices. In this case, after updating the user's role, we should immediately invalidate all of the user's access_tokens.
+
+In the d_jwt_auth package, discard all complicated and impractical methods for invalidating tokens! We use a much more practical approach.
+
+We have a model called `UserAuth` where we store the `user_id`, `token_type`, and a unique identifier `uuid`.
+
+Inside the token claims, we have a field called `uuid_field` whose value is equal to the `user_auth` value associated with that token and user.
+
+During token validation, it is checked whether the `uuid_field` value equals the `uuid` value in the `user_auth` associated with that user and token type.
+When we need to invalidate an access or refresh token, all we need to do is change the `uuid` value. In this case, the `uuid` value in `user_auth` will no longer match the `uuid` value in the tokens associated with that user, and the tokens will be considered invalid.
+
+Yes! We have replaced all the complicated methods with this practical approach.
+
+Additionally, when the `uuid` value is fetched from the database, it is cached with a key like `user:{user_id}:access:uuid`, and subsequent requests retrieve it from the cache. So, it also performs well.
+
+Example:
+
+```python
+from rest_framework.views import APIView
+from d_jwt_auth.services import update_user_auth_uuid
+from d_jwt_auth.models import UserAuth
+
+
+class UserUpdateView(APIView):
+
+    def post(self, request):
+        # Update user ...
+        update_user_auth_uuid(user_id=request.user.id, token_type=UserAuth.ACCESS_TOKEN)
+        # Well done!
+
+class UserLogoutView(APIView):
+
+    def post(self, request):
+        # Update user ...
+        update_user_auth_uuid(user_id=request.user.id, token_type=UserAuth.ACCESS_TOKEN)
+        update_user_auth_uuid(user_id=request.user.id, token_type=UserAuth.REFRESH_TOKEN)
+        # Well done!
+```
+
+**Important Note!**
+
+Below, it is explained how you can configure the system to obtain user information using the access_token, and avoid sending requests to the database every time you need to access `request.user`.
+It is recommended that you use this feature, but with caution!
+
+If you intend to update the user information, make sure to first fetch the complete user data from the database, and then proceed with the update.
+
+Example:
+
+```python
+from django.contrib.auth import get_user_model
+from rest_framework.views import APIView
+from d_jwt_auth.services import update_user_auth_uuid
+from d_jwt_auth.models import UserAuth
+
+User = get_user_model()
+
+class UserUpdateView(APIView):
+
+    def post(self, request):
+        # First, get the user
+        user = User.objects.get(id=request.user.id)
+        # Update the user
+        # ...
+        update_user_auth_uuid(user_id=request.user.id, token_type=UserAuth.ACCESS_TOKEN)
+        # Well done!
+```
+
+Therefore, make sure to fetch the complete user data from the database before making any changes to the user.
+
 ## d_jwt_auth Settings
 
 The `d_jwt_auth` settings are configured in the `settings.py` file of your Django project and include the following options:
