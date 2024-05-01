@@ -48,8 +48,13 @@ def generate_refresh_token_with_claims(**kwargs) -> str:
     if app_setting.get_device_limit:
         user_auth = get_user_auth(user_id=kwargs[USER_ID], token_type=UserAuth.REFRESH_TOKEN)
         if user_auth.device_login_count >= app_setting.get_device_limit:
-            update_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.REFRESH_TOKEN)
-        kwargs[UUID_FIELD] = str(user_auth.uuid)
+            user_auth.device_login_count = 0
+            uuid = update_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.REFRESH_TOKEN)
+            kwargs[UUID_FIELD] = uuid
+        else:
+            kwargs[UUID_FIELD] = str(user_auth.uuid)
+        user_auth.device_login_count += 1
+        user_auth.save()
     else:
         kwargs[UUID_FIELD] = get_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.REFRESH_TOKEN)
 
@@ -66,9 +71,13 @@ def generate_access_token_with_claims(**kwargs) -> str:
     if app_setting.get_device_limit:
         user_auth = get_user_auth(user_id=kwargs[USER_ID], token_type=UserAuth.ACCESS_TOKEN)
         if user_auth.device_login_count >= app_setting.get_device_limit:
-            update_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.ACCESS_TOKEN)
-        kwargs[UUID_FIELD] = str(user_auth.uuid)
-
+            user_auth.device_login_count = 0
+            uuid = update_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.ACCESS_TOKEN)
+            kwargs[UUID_FIELD] = uuid
+        else:
+            kwargs[UUID_FIELD] = str(user_auth.uuid)
+        user_auth.device_login_count += 1
+        user_auth.save()
     else:
         kwargs[UUID_FIELD] = get_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.ACCESS_TOKEN)
 
