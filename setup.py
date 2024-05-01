@@ -11,7 +11,7 @@ def read(f):
 
 setup(
     name='d_jwt_auth',
-    version="0.0.1",
+    version="0.0.2",
     url='https://github.com/alireza-fa/django-jwt-auth',
     license='MIT',
     description='django-jwt-auth is an application for authenticating users with jwt in Django.',
@@ -21,7 +21,7 @@ setup(
     author_email='alirezafeyze44@gmail.com',
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
-    install_requires=["django>=3.2", "djangorestframework>=3.0", "djangorestframework-simplejwt>=5.0", "pycryptodome>=3.0", "model-bakery>=1.0"],
+    install_requires=["django>=3.2", "djangorestframework>=3.0", "djangorestframework-simplejwt>=5.3.0", "pycryptodome>=3.0"],
     python_requires=">=3.9",
     zip_safe=False,
     classifiers=[
