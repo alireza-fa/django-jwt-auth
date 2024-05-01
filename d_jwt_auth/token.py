@@ -7,9 +7,7 @@ from django.utils.timezone import now
 from django.contrib.auth import get_user_model
 
 from .app_settings import app_setting
-from .cache import get_cache, set_cache
-from .constants import ACCESS_TOKEN, REFRESH_TOKEN, UUID_FIELD, USER_ID, TOKEN_TYPE, DEVICE_NAME, IP_ADDRESS, \
-    ACCESS_TOKEN_DEVICE_LIMIT_KEY, REFRESH_TOKEN_DEVICE_LIMIT_KEY
+from .constants import ACCESS_TOKEN, REFRESH_TOKEN, UUID_FIELD, USER_ID, TOKEN_TYPE, DEVICE_NAME, IP_ADDRESS
 from .encryption import encrypt, decrypt
 from .exceptions import TokenError
 from .client import get_client_info
@@ -51,6 +49,7 @@ def generate_refresh_token_with_claims(**kwargs) -> str:
             user_auth.device_login_count = 0
             uuid = update_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.REFRESH_TOKEN)
             kwargs[UUID_FIELD] = uuid
+            user_auth.uuid = uuid
         else:
             kwargs[UUID_FIELD] = str(user_auth.uuid)
         user_auth.device_login_count += 1
@@ -74,6 +73,7 @@ def generate_access_token_with_claims(**kwargs) -> str:
             user_auth.device_login_count = 0
             uuid = update_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.ACCESS_TOKEN)
             kwargs[UUID_FIELD] = uuid
+            user_auth.uuid = uuid
         else:
             kwargs[UUID_FIELD] = str(user_auth.uuid)
         user_auth.device_login_count += 1

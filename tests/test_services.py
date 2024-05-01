@@ -5,11 +5,10 @@ from django.contrib.auth import get_user_model
 from django.test import override_settings
 
 from d_jwt_auth.services import create_user_auth, get_user_auth_uuid, ACCESS_UUID_CACHE_KEY, \
-    REFRESH_UUID_CACHE_KEY, update_user_auth_uuid
+    REFRESH_UUID_CACHE_KEY, update_user_auth_uuid, get_user_auth
 from d_jwt_auth.models import UserAuth
 from d_jwt_auth.cache import get_cache, clear_all_cache
 from d_jwt_auth.app_settings import app_setting
-from d_jwt_auth.token import generate_access_token_with_claims
 
 User = get_user_model()
 
@@ -118,3 +117,23 @@ class TestServices(TestCase):
         UserAuth.objects.all().delete()
         uuid_field_from_cache = get_user_auth_uuid(user_id=self.user.id, token_type=UserAuth.REFRESH_TOKEN)
         self.assertIsNotNone(uuid_field_from_cache)
+
+    def test_get_user_auth_access_token(self):
+        user_auth = get_user_auth(user_id=self.user.id, token_type=UserAuth.ACCESS_TOKEN)
+        self.assertEqual(user_auth.token_type, UserAuth.ACCESS_TOKEN)
+
+    def test_get_user_auth_refresh_token(self):
+        user_auth = get_user_auth(user_id=self.user.id, token_type=UserAuth.REFRESH_TOKEN)
+        self.assertEqual(user_auth.token_type, UserAuth.REFRESH_TOKEN)
+
+    def test_get_user_auth_create_once(self):
+        user_auth = get_user_auth(user_id=self.user.id, token_type=UserAuth.REFRESH_TOKEN)
+        user_auth2 = get_user_auth(user_id=self.user.id, token_type=UserAuth.REFRESH_TOKEN)
+        self.assertEqual(user_auth2.uuid, user_auth.uuid)
+
+    @override_settings(JWY_AUTH_USING_CACHE=True)
+    def tset_get_user_auth_cache_uuid(self):
+        clear_all_cache()
+        user_auth = get_user_auth(user_id=self.user.id, token_type=UserAuth.ACCESS_TOKEN)
+        uuid_cache = get_cache(key=ACCESS_UUID_CACHE_KEY.format(user_id=self.user.id))
+        self.assertEqual(str(user_auth.uuid), uuid_cache)

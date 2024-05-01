@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.test import override_settings
 
 from rest_framework.test import APIRequestFactory
 from model_bakery import baker
@@ -179,6 +180,38 @@ class TestToken(TestCase):
         self.assertEqual(token["token_type"], REFRESH_TOKEN)
         uuid_field = get_user_auth_uuid(user_id=self.user_id, token_type=UserAuth.REFRESH_TOKEN)
         self.assertEqual(uuid_field, token[UUID_FIELD])
+
+    @override_settings(JWT_AUTH_DEVICE_LIMIT=2)
+    def test_generate_refresh_token_with_claims_device_limit(self):
+        request = APIRequestFactory().get(path="/")
+        request.META["REMOTE_ADDR"] = self.ip_address
+        request.META["HTTP_USER_AGENT"] = self.device_name
+        token1 = generate_refresh_token_with_claims(**{**self.user.__dict__, **self.client_info})
+        self.assertIsNotNone(validate_token(request=request, raw_token=token1))
+        token2 = generate_refresh_token_with_claims(**{**self.user.__dict__, **self.client_info})
+        self.assertIsNotNone(validate_token(request=request, raw_token=token2))
+        token3 = generate_refresh_token_with_claims(**{**self.user.__dict__, **self.client_info})
+        self.assertIsNotNone(validate_token(request=request, raw_token=token3))
+        with self.assertRaises(TokenError):
+            validate_token(request=request, raw_token=token1)
+        with self.assertRaises(TokenError):
+            validate_token(request=request, raw_token=token2)
+
+    @override_settings(JWT_AUTH_DEVICE_LIMIT=2)
+    def test_generate_access_token_with_claims_device_limit(self):
+        request = APIRequestFactory().get(path="/")
+        request.META["REMOTE_ADDR"] = self.ip_address
+        request.META["HTTP_USER_AGENT"] = self.device_name
+        token1 = generate_access_token_with_claims(**{**self.user.__dict__, **self.client_info})
+        self.assertIsNotNone(validate_token(request=request, raw_token=token1))
+        token2 = generate_access_token_with_claims(**{**self.user.__dict__, **self.client_info})
+        self.assertIsNotNone(validate_token(request=request, raw_token=token2))
+        token3 = generate_access_token_with_claims(**{**self.user.__dict__, **self.client_info})
+        self.assertIsNotNone(validate_token(request=request, raw_token=token3))
+        with self.assertRaises(TokenError):
+            validate_token(request=request, raw_token=token1)
+        with self.assertRaises(TokenError):
+            validate_token(request=request, raw_token=token2)
 
     def test_generate_access_token_with_claims(self):
         token = generate_access_token_with_claims(**{**self.user.__dict__, **self.client_info})
