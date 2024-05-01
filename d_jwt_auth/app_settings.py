@@ -63,6 +63,10 @@ class AppSettings:
     def get_user_by_access_token(self):
         return self._setting("GET_USER_BY_ACCESS_TOKEN", False)
 
+    @property
+    def get_device_limit(self):
+        return self._setting("DEVICE_LIMIT", None)
+
 
 @functools.lru_cache
 def jwt_auth_app_settings() -> AppSettings:

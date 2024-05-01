@@ -16,6 +16,7 @@ class UserAuth(models.Model):
     user_id = models.IntegerField(verbose_name=_("user id"), db_index=True)
     token_type = models.PositiveSmallIntegerField(choices=TOKEN_TYPE_CHOICES, verbose_name=_("token type"))
     uuid = models.UUIDField(verbose_name=_("uuid"), unique=True, db_index=True)
+    device_login_count = models.PositiveSmallIntegerField(default=0, verbose_name=_("device login count"))
 
     class Meta:
         verbose_name = _("UserAuth")

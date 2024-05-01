@@ -7,11 +7,13 @@ from django.utils.timezone import now
 from django.contrib.auth import get_user_model
 
 from .app_settings import app_setting
-from .constants import ACCESS_TOKEN, REFRESH_TOKEN, UUID_FIELD, USER_ID, TOKEN_TYPE, DEVICE_NAME, IP_ADDRESS
+from .cache import get_cache, set_cache
+from .constants import ACCESS_TOKEN, REFRESH_TOKEN, UUID_FIELD, USER_ID, TOKEN_TYPE, DEVICE_NAME, IP_ADDRESS, \
+    ACCESS_TOKEN_DEVICE_LIMIT_KEY, REFRESH_TOKEN_DEVICE_LIMIT_KEY
 from .encryption import encrypt, decrypt
 from .exceptions import TokenError
 from .client import get_client_info
-from .services import get_user_auth_uuid
+from .services import get_user_auth_uuid, update_user_auth_uuid, get_user_auth
 from .models import UserAuth
 
 User = get_user_model()
@@ -43,7 +45,14 @@ def get_token_claims(*, token: Token, claims: Dict):
 def generate_refresh_token_with_claims(**kwargs) -> str:
     refresh_token = RefreshToken()
 
-    kwargs[UUID_FIELD] = get_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.REFRESH_TOKEN)
+    if app_setting.get_device_limit:
+        user_auth = get_user_auth(user_id=kwargs[USER_ID], token_type=UserAuth.REFRESH_TOKEN)
+        if user_auth.device_login_count >= app_setting.get_device_limit:
+            update_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.REFRESH_TOKEN)
+        kwargs[UUID_FIELD] = str(user_auth.uuid)
+    else:
+        kwargs[UUID_FIELD] = get_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.REFRESH_TOKEN)
+
     set_token_claims(token=refresh_token, claims=app_setting.refresh_token_claims, **kwargs)
 
     refresh_token = encrypt_token(refresh_token)
@@ -54,7 +63,15 @@ def generate_refresh_token_with_claims(**kwargs) -> str:
 def generate_access_token_with_claims(**kwargs) -> str:
     access_token = AccessToken()
 
-    kwargs[UUID_FIELD] = get_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.ACCESS_TOKEN)
+    if app_setting.get_device_limit:
+        user_auth = get_user_auth(user_id=kwargs[USER_ID], token_type=UserAuth.ACCESS_TOKEN)
+        if user_auth.device_login_count >= app_setting.get_device_limit:
+            update_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.ACCESS_TOKEN)
+        kwargs[UUID_FIELD] = str(user_auth.uuid)
+
+    else:
+        kwargs[UUID_FIELD] = get_user_auth_uuid(user_id=kwargs[USER_ID], token_type=UserAuth.ACCESS_TOKEN)
+
     set_token_claims(token=access_token, claims=app_setting.access_token_claims, **kwargs)
 
     access_token = encrypt_token(access_token)
@@ -144,7 +161,7 @@ def refresh_access_token(request: HttpRequest, raw_refresh_token: str) -> str:
     validate_refresh_token(token=token, client_info=client_info)
 
     try:
-        user = User.objects.get(id=token["id"])
+        user = User.objects.get(id=token[USER_ID])
     except User.DoesNotExist as err:
         raise TokenError(err)
 

@@ -54,6 +54,20 @@ def get_user_auth_uuid(user_id: int, token_type: int) -> str:
     return str(user_auth.uuid)
 
 
+def get_user_auth(user_id: int, token_type: int) -> UserAuth:
+    user_auths = UserAuth.objects.filter(user_id=user_id, token_type=token_type)
+    if user_auths.exists():
+        user_auth = user_auths.first()
+    else:
+        user_auth = create_user_auth(user_id=user_id, token_type=token_type)
+
+    if app_setting.cache_using:
+        if not get_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id)):
+            set_cache(key=TOKEN_TYPE_KEY[token_type].format(user_id=user_id), value=str(user_auth.uuid), timeout=60*60*24*30)
+
+    return user_auth
+
+
 def update_user_auth_uuid(user_id: int, token_type: int) -> str:
     user_auths = UserAuth.objects.filter(user_id=user_id, token_type=token_type)
     if user_auths.exists():

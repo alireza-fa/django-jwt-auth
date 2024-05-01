@@ -2,12 +2,14 @@ import uuid
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.test import override_settings
 
 from d_jwt_auth.services import create_user_auth, get_user_auth_uuid, ACCESS_UUID_CACHE_KEY, \
     REFRESH_UUID_CACHE_KEY, update_user_auth_uuid
 from d_jwt_auth.models import UserAuth
 from d_jwt_auth.cache import get_cache, clear_all_cache
 from d_jwt_auth.app_settings import app_setting
+from d_jwt_auth.token import generate_access_token_with_claims
 
 User = get_user_model()
 
