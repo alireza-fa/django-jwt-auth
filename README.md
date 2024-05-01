@@ -18,6 +18,8 @@ Some key strengths of this package include:
 
 5. **Validation access token with ip address and device && validation refresh token with device name**
 
+6. **Limit the number of devices that use an account 
+
 ## Getting Started with d_jwt_auth
 
 First, install the `d_jwt_auth` package:
@@ -238,6 +240,10 @@ By default, this field is set to `False`, but it is recommended to use caching.
 `JWT_AUTH_GET_USER_BY_ACCESS_TOKEN = False`
 
 Based on the previous explanations, if you set this field to `True`, the user information will be retrieved from the access token. By using this feature, you no longer need to query the database every time to retrieve user information, and the response time for retrieving user information can be at least two times faster.
+
+`JWT_AUTH_DEVICE_LIMIT = True`
+
+Using this field, you can specify how many devices can use the same account at the same time. If you do not specify, no limit will be considered.
 
 ## ----------------------- ----------------------
 For customizations and modifications, you have complete freedom, and you can easily personalize the package according to your project's needs.
