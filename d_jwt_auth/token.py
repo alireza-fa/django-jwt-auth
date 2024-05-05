@@ -1,10 +1,12 @@
 from typing import Dict
+from datetime import datetime
 
 from django.http import HttpRequest
 from rest_framework_simplejwt.tokens import Token, UntypedToken
 from rest_framework_simplejwt.tokens import TokenError as BaseTokenError
 from django.utils.timezone import now
 from django.contrib.auth import get_user_model
+from django.db.models.fields.files import File
 
 from .app_settings import app_setting
 from .constants import ACCESS_TOKEN, REFRESH_TOKEN, UUID_FIELD, USER_ID, TOKEN_TYPE, DEVICE_NAME, IP_ADDRESS
@@ -32,6 +34,12 @@ def set_token_claims(*, token: Token, claims: Dict, **kwargs):
         claims[key] = kwargs[key]
 
     for key, value in claims.items():
+        if isinstance(value, File):
+            token[key] = value.url
+        elif isinstance(value, File):
+            token[key] = value.url
+        elif isinstance(value, datetime):
+            token[key] = str(value)
         token[key] = value
 
 
