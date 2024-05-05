@@ -40,7 +40,8 @@ def set_token_claims(*, token: Token, claims: Dict, **kwargs):
             token[key] = value.url
         elif isinstance(value, datetime):
             token[key] = str(value)
-        token[key] = value
+        else:
+            token[key] = value
 
 
 def get_token_claims(*, token: Token, claims: Dict):
