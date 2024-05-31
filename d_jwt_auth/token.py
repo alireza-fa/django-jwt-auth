@@ -35,9 +35,10 @@ def set_token_claims(*, token: Token, claims: Dict, **kwargs):
 
     for key, value in claims.items():
         if isinstance(value, File):
-            token[key] = value.url
-        elif isinstance(value, File):
-            token[key] = value.url
+            if value:
+                token[key] = value.url
+            else:
+                token[key] = None
         elif isinstance(value, datetime):
             token[key] = str(value)
         else:
