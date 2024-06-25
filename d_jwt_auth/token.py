@@ -31,7 +31,7 @@ class RefreshToken(Token):
 
 def set_token_claims(*, token: Token, claims: Dict, **kwargs):
     for key in claims:
-        claims[key] = kwargs[key]
+        claims[key] = kwargs.get(key)
 
     for key, value in claims.items():
         if isinstance(value, File):
@@ -196,3 +196,15 @@ def verify_token(request: HttpRequest, raw_token: str) -> bool:
     except TokenError:
         return False
     return True
+
+
+def get_token_claims_info(request: HttpRequest, raw_token: str) -> Dict:
+    token = validate_token(request=request, raw_token=raw_token)
+    if token[TOKEN_TYPE] == REFRESH_TOKEN:
+        refresh_claims = app_setting.refresh_token_claims
+        get_token_claims(token=token, claims=refresh_claims)
+        return refresh_claims
+    else:
+        access_claims = app_setting.access_token_claims
+        get_token_claims(token=token, claims=access_claims)
+        return access_claims

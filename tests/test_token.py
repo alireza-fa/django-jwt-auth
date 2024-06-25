@@ -5,9 +5,10 @@ from django.test import override_settings
 from rest_framework.test import APIRequestFactory
 from model_bakery import baker
 
+from accounts.models import UserRole
 from d_jwt_auth.token import AccessToken, RefreshToken, set_token_claims, get_token_claims, generate_refresh_token_with_claims, \
     generate_access_token_with_claims, encrypt_token, decrypt_token, validate_refresh_token, validate_access_token, \
-    validate_token, get_user_by_access_token, generate_token, refresh_access_token
+    validate_token, get_user_by_access_token, generate_token, refresh_access_token, get_token_claims_info
 from d_jwt_auth.constants import ACCESS_TOKEN, REFRESH_TOKEN, USER_ID, IP_ADDRESS, DEVICE_NAME, UUID_FIELD
 from d_jwt_auth.app_settings import app_setting
 from d_jwt_auth.services import get_user_auth_uuid, update_user_auth_uuid
@@ -270,3 +271,23 @@ class TestToken(TestCase):
 
         with self.assertRaises(TokenError):
             refresh_access_token(request=request, raw_refresh_token=refresh_token)
+
+    def test_generate_token_with_roles(self):
+        request = APIRequestFactory().get(path="/")
+        request.META["REMOTE_ADDR"] = self.ip_address
+        request.META["HTTP_USER_AGENT"] = self.device_name
+        self.user.roles.create(role=UserRole.DEFAULT)
+        self.user.roles.create(role=UserRole.DOCTOR)
+        token = generate_token(request=request, user=self.user, roles=list(self.user.roles.all().values_list("role", flat=True)))
+        access_token = get_token_claims_info(request=request, raw_token=token["access_token"])
+        self.assertEqual(list, type(access_token["roles"]))
+        self.assertEqual(len(access_token["roles"]), 2)
+
+    def test_generate_token_with_empty_roles(self):
+        request = APIRequestFactory().get(path="/")
+        request.META["REMOTE_ADDR"] = self.ip_address
+        request.META["HTTP_USER_AGENT"] = self.device_name
+        token = generate_token(request=request, user=self.user, roles=list(self.user.roles.all().values_list('role', flat=True)))
+        access_token = get_token_claims_info(request=request, raw_token=token["access_token"])
+        self.assertEqual(access_token["roles"], [])
+        self.assertEqual(len(access_token["roles"]), 0)

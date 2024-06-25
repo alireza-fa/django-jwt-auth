@@ -140,13 +140,16 @@ JWT_AUTH_ACCESS_TOKEN_LIFETIME = timedelta(days=7)
 JWT_AUTH_REFRESH_TOKEN_LIFETIME = timedelta(days=30)
 
 JWT_AUTH_ACCESS_TOKEN_CLAIMS = {
-    "username": "",
+    "fullname": "",
     "email": "",
     "is_superuser": False,
+    "roles": [],
 }
 
 JWT_AUTH_ACCESS_TOKEN_USER_FIELD_CLAIMS = {
-    **JWT_AUTH_ACCESS_TOKEN_CLAIMS
+    "fullname": "",
+    "email": "",
+    "is_superuser": False,
 }
 
 JWT_AUTH_GET_USER_BY_ACCESS_TOKEN = True

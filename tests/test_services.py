@@ -10,6 +10,7 @@ from d_jwt_auth.models import UserAuth
 from d_jwt_auth.cache import get_cache, clear_all_cache
 from d_jwt_auth.app_settings import app_setting
 
+
 User = get_user_model()
 
 
@@ -17,7 +18,9 @@ class TestServices(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            username="alireza",
+            fullname="alireza",
+            national_code="1111111111",
+            phone_number="09309806535",
             password="password",
             email="alirezafeyze44@gmail.com")
 
@@ -34,7 +37,9 @@ class TestServices(TestCase):
     def test_create_user_auth_for_many_users(self):
         for i in range(10):
             user = User.objects.create_user(
-                username="user%d" % i,
+                fullname="user%d" % i,
+                national_code="1111111111",
+                phone_number="0912912111%d" % i,
                 password="password",
                 email="email%d@gmail.com" % i)
             create_user_auth(user_id=user.id, token_type=UserAuth.ACCESS_TOKEN)
