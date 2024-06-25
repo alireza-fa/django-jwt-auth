@@ -124,11 +124,11 @@ def decrypt_token(token: str) -> str:
     return decrypted_token
 
 
-def generate_token(request: HttpRequest, user: User) -> Dict:
+def generate_token(request: HttpRequest, user: User, **kwargs) -> Dict:
     client_info = get_client_info(request=request)
-    refresh_token = generate_refresh_token_with_claims(**client_info, **user.__dict__)
+    refresh_token = generate_refresh_token_with_claims(**client_info, **user.__dict__, **kwargs)
 
-    access_token = generate_access_token_with_claims(**client_info, **user.__dict__)
+    access_token = generate_access_token_with_claims(**client_info, **user.__dict__, **kwargs)
 
     user.last_login = now()
     user.save()

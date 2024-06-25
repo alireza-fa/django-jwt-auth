@@ -19,7 +19,7 @@ setup(
     long_description_content_type='text/markdown',
     author='Alireza Feizi',
     author_email='alirezafeyze44@gmail.com',
-    packages=find_packages(exclude=['tests*']),
+    packages=find_packages(exclude=['tests*', 'config*', 'accounts*', 'manage.py']),
     include_package_data=True,
     install_requires=["django>=3.2", "djangorestframework>=3.0", "djangorestframework-simplejwt>=5.3.0", "pycryptodome>=3.0"],
     python_requires=">=3.9",
