@@ -126,9 +126,18 @@ def decrypt_token(token: str) -> str:
 
 def generate_token(request: HttpRequest, user: User, **kwargs) -> Dict:
     client_info = get_client_info(request=request)
-    refresh_token = generate_refresh_token_with_claims(**client_info, **user.__dict__, **kwargs)
 
-    access_token = generate_access_token_with_claims(**client_info, **user.__dict__, **kwargs)
+    claims = {}
+    for key, value in client_info.items():
+        claims[key] = value
+    for key, value in user.__dict__.items():
+        claims[key] = value
+    for key, value in kwargs.items():
+        claims[key] = value
+
+    refresh_token = generate_refresh_token_with_claims(**claims)
+
+    access_token = generate_access_token_with_claims(**claims)
 
     user.last_login = now()
     user.save()
@@ -172,7 +181,7 @@ def validate_token(request: HttpRequest, raw_token: str) -> Token:
     return token
 
 
-def refresh_access_token(request: HttpRequest, raw_refresh_token: str) -> str:
+def refresh_access_token(request: HttpRequest, raw_refresh_token: str, **kwargs) -> str:
     token = validate_token(request=request, raw_token=raw_refresh_token)
 
     client_info = get_client_info(request=request)
@@ -187,7 +196,15 @@ def refresh_access_token(request: HttpRequest, raw_refresh_token: str) -> str:
     user.last_login = now()
     user.save()
 
-    return generate_access_token_with_claims(**user.__dict__, **client_info)
+    access_claims = {}
+    for key, value in client_info.items():
+        access_claims[key] = value
+    for key, value in user.__dict__.items():
+        access_claims[key] = value
+    for key, value in kwargs.items():
+        access_claims[key] = value
+
+    return generate_access_token_with_claims(**access_claims)
 
 
 def verify_token(request: HttpRequest, raw_token: str) -> bool:

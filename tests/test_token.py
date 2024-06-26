@@ -291,3 +291,20 @@ class TestToken(TestCase):
         access_token = get_token_claims_info(request=request, raw_token=token["access_token"])
         self.assertEqual(access_token["roles"], [])
         self.assertEqual(len(access_token["roles"]), 0)
+
+    def test_generate_token_with_manually_info(self):
+        request = APIRequestFactory().get(path="/")
+        request.META["REMOTE_ADDR"] = self.ip_address
+        request.META["HTTP_USER_AGENT"] = self.device_name
+        token = generate_token(request=request, user=self.user, roles=list(self.user.roles.all().values_list('role', flat=True)), fullname="mamad keley")
+        access_token = get_token_claims_info(request=request, raw_token=token["access_token"])
+        self.assertEqual(access_token["fullname"], "mamad keley")
+
+    def test_refresh_access_token_with_manually_info(self):
+        request = APIRequestFactory().get(path="/")
+        request.META["REMOTE_ADDR"] = self.ip_address
+        request.META["HTTP_USER_AGENT"] = self.device_name
+        token = generate_token(request=request, user=self.user, roles=list(self.user.roles.all().values_list('role', flat=True)))
+        raw_access_token = refresh_access_token(request=request, raw_refresh_token=token["refresh_token"], fullname="mamad keley")
+        access_token = get_token_claims_info(request=request, raw_token=raw_access_token)
+        self.assertEqual(access_token["fullname"], "mamad keley")
