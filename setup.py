@@ -11,7 +11,7 @@ def read(f):
 
 setup(
     name='d_jwt_auth',
-    version="0.0.6",
+    version="0.0.7",
     url='https://github.com/alireza-fa/django-jwt-auth',
     license='MIT',
     description='django-jwt-auth is an application for authenticating users with jwt in Django.',
