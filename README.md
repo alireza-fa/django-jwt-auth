@@ -216,6 +216,18 @@ JWT_AUTH_ACCESS_TOKEN_CLAIMS = {
 JWT_AUTH_GET_USER_BY_ACCESS_TOKEN = True
 ```
 
+Benchmark:
+
+Fetching user information using access token claims takes an average of 17 ms. In comparison, retrieving the same information from the database takes between 50 to 60 ms.
+
+Additionally, consider the reduced database load achieved by obtaining user profile information through the access token.
+
+get user profile from access token claims:
+![data-structures.png](/docs/get_user_info_access_token_claims.png)
+
+get user profile from database:
+![data-structures.png](/docs/get_user_from_database.png)
+
 The `d_jwt_auth` settings are configured in the `settings.py` file of your Django project and include the following options:
 
 `JWT_AUTH_ACCESS_TOKEN_USER_FIELD_CLAIMS = {
@@ -244,6 +256,7 @@ Based on the previous explanations, if you set this field to `True`, the user in
 `JWT_AUTH_DEVICE_LIMIT = True`
 
 Using this field, you can specify how many devices can use the same account at the same time. If you do not specify, no limit will be considered.
+
 
 ## ----------------------- ----------------------
 For customizations and modifications, you have complete freedom, and you can easily personalize the package according to your project's needs.
